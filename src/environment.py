@@ -10,12 +10,15 @@ class environment:
 
         self.setup_dict = setup_dict
 
+    def results(self):
+        """This function returns simulation results"""
+
+        return(0)
+
     def run_sim(self):
         """This function oversees execution of the simulation"""
 
-        self.state.one_hot()
-
-        self.agent.wake_agent(self.setup_dict['model'])
+        self.agent.wake_agent(self.state.data, self.setup_dict['model'])
 
         if self.setup_dict['train'] == 'yes':
 
@@ -28,6 +31,10 @@ class environment:
     def train_agent(self):
         """This function manages the training of an agent"""
 
-        self.agent.wake_agent(self.state.data.track_id)
+        self.agent.wake_agent(setup['model'], setup['train'])
+
+        self.state.set_aside_validation_set()
+
+        self.state.get_random_user_history()
 
 
