@@ -1,0 +1,4 @@
+train, yes
+model, lstm
+loss, simple
+data, ../data/songs/clean.pk
