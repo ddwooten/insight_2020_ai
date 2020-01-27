@@ -99,8 +99,6 @@ class agent:
 
         self.model_name = name
 
-        self.name_dict = self.get_name_dict(data)
-
         self.add_model(self.model_name)
 
 
