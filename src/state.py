@@ -9,9 +9,9 @@ class state:
 
     def __init__(self, data):
 
-        self.data = data 
-
         self.current_user_history = None
+        
+        self.data = data 
 
         self.val_set = None
 

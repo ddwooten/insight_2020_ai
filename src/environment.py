@@ -6,9 +6,9 @@ class environment:
 
         self.agent = agent
 
-        self.state = state
-
         self.setup_dict = setup_dict
+
+        self.state = state
 
     def results(self):
         """This function returns simulation results"""

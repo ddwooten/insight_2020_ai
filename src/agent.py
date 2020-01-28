@@ -7,17 +7,19 @@ class agent:
 
     def __init__(self):
         
+        self.factors = None
+
+        self.loss = None
+
         self.model = None
 
         self.model_name = None
 
-        self.loss = None
+        self.name_list = None
+
+        self.targets = []
 
         self.train = None
-
-        self.factors = None
-
-        self.name_list = None
     
     def add_model(self):
         """This function calls the appropriate model builder"""
@@ -44,7 +46,7 @@ class agent:
         tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
                                         from_logits=False)
 
-        return(tensor_loss(y_actual, y_pred)
+        return(tensor_loss(y_actual, y_pred))
 
     def factorize(self, user_history):
         """This function converts a given user history to a factorized array
@@ -69,6 +71,12 @@ class agent:
             j = 0
 
             for index, row in history.iterrows():
+
+                if j == (history.shape[0]):
+
+                    self.targets.append(self.get_targets(row))
+
+                    break
 
                 if j == 300:
 
@@ -129,6 +137,25 @@ class agent:
             output[i] = track
 
         self.name_list = output
+
+    def get_gradient(self):
+        """This function computes and returns the gradients of the given 
+        model"""
+
+        with tf.GradientTape() as tape:
+
+            loss_value = self.custom_loss(
+
+    def get_targets(self, user_history):
+        """This function creates a one hot vector of the target track id"""
+
+        output = [0] * len(self.name_list)
+
+        i = 0
+
+        for track in self.name_list:
+            
+            if track ==     
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
