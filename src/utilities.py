@@ -20,6 +20,8 @@ def read_setup(setup):
 
     model_pattern = re.compile(r'(?i)model,\s*([^,\n\r\t]*)')
 
+    epochs_pattern = re.compile(r'(?i)epochs,\s*([0-9]+)')
+
     yes_pattern = re.compile(r'(?i)yes')
 
     for line in setup:
@@ -29,6 +31,8 @@ def read_setup(setup):
         data_match = data_pattern.search(line)
 
         model_match = model_pattern.search(line)
+
+        epochs_match = epochs_pattern.search(line)
 
         if train_match is not None:
 
@@ -45,5 +49,9 @@ def read_setup(setup):
         if model_match is not None:
 
             output['model'] = model_match.groups(1)[0]
+
+        if epochs_match is not None:
+
+            output['epochs'] = int(epochs_match.groups(1)[0])
 
     return(output)

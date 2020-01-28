@@ -20,7 +20,7 @@ class environment:
 
         self.agent.wake_agent(self.state.data, self.setup_dict['model'])
 
-        if self.setup_dict['train'] == 'yes':
+        if self.setup_dict['train'] > 0:
 
             self.train_agent()
 
@@ -31,10 +31,11 @@ class environment:
     def train_agent(self):
         """This function manages the training of an agent"""
 
-        self.agent.wake_agent(setup['model'], setup['train'])
+        self.agent.wake_agent(self.setup['model'], self.setup['train'])
 
         self.state.set_aside_validation_set()
 
-        self.state.get_random_user_history()
+        for epoch in range(self.setup['epochs']):
 
+            self.agent.train(self.state.get_random_user_history())
 
