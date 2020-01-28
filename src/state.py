@@ -38,6 +38,10 @@ class state:
 
                 user = None
 
+            if self.data[self.data['user_id'] == user].shape[0] < 3:
+
+                user = None
+
         history_start = random.randint(0, \
                         (self.data[self.data['user_id'] == user].shape[0] - 2))
 
