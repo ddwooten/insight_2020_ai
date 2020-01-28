@@ -7,6 +7,8 @@ class agent:
 
     def __init__(self):
         
+        self.accuracy = None
+         
         self.factors = None
 
         self.loss = None
@@ -153,8 +155,8 @@ class agent:
 
             loss_value = self.custom_loss()
 
-        return loss_value, tape.gradient(loss_value, 
-                                self.model.trainable_variables)
+        return (loss_value, tape.gradient(loss_value, 
+                                self.model.trainable_variables))
 
     def get_name_list(self, data):
         """This function converts item hashes to unique integer tags with a
@@ -182,12 +184,21 @@ class agent:
             if track == row['track_id']:
 
                 output[i] == 1
+
             i += 1
 
     def train(self, user_history):
         """This function manages the training of the model based on the provided
         data"""
+        
+        loss_value, gradients = self.get_gradient() 
 
+        self.optimizer.apply_gradients(zip(gradients, 
+                                        self.model.trainable_variables))
+
+        self.loss(loss_value)
+
+        self.accuracy(self.targets, self.prod)
 
 
     def wake_agent(self, data, name, train):
@@ -199,6 +210,10 @@ class agent:
         self.train = 1 if train == 'yes' else self.train = 0
 
         self.name_dict = self.get_name_dict(data)
+
+        self.loss = tf.keras.metrics.Mean()
+
+        self.accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
 
         self.add_model(self.model_name)
 

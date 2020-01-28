@@ -49,7 +49,7 @@ def main():
 
     results = env.results()
 
-    print("Results of the simulation are:...\n\n{}".format(results))
+    print("Accuracy:{}, Loss:{}".format(results))
 
     print("Exiting program gracefully.\n\n")
     
