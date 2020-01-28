@@ -17,6 +17,10 @@ class agent:
 
         self.name_list = None
 
+        self.optimizer = None
+
+        self.pred = None
+
         self.targets = []
 
         self.train = None
@@ -38,15 +42,19 @@ class agent:
         self.model.add(tf.keras.layers.Dense(len(self.name_dict[0]), 
                                              activation = 'softmax'))
 
-    def custom_loss(y_actual):
+        # Don't forget an optimizer!
+
+        self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01])
+
+    def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
 
-        y_pred = self.model(self.factors, training = self.train)
+        self.pred = self.model(self.factors, training = self.train)
         
         tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
                                         from_logits=False)
 
-        return(tensor_loss(y_actual, y_pred))
+        return(tensor_loss(self.targets, self.pred))
 
     def factorize(self, user_history):
         """This function converts a given user history to a factorized array
@@ -61,8 +69,12 @@ class agent:
         """This function factorizes a given user history, or batch of user
         histories, into factors for an lstm model"""
 
+        # Reset the holding arrays
+
         self.factors = np.zeroes(len(user_history), 300, 
                         15 + len(self.name_list))
+
+        self.targets = []
         
         i = 0
 
@@ -72,13 +84,19 @@ class agent:
 
             for index, row in history.iterrows():
 
-                if j == (history.shape[0]):
+                # The last entry in a history is the one we attempt to predict
+
+                if j == (history.shape[0] - 1):
 
                     self.targets.append(self.get_targets(row))
 
                     break
+                
+                # Truncating maximum history to ~1 day of continuous listening
 
                 if j == 300:
+
+                    self.targets.append(self.get_targets(row))
 
                     break
 
@@ -112,6 +130,9 @@ class agent:
 
                 self.factors[i, j, 14] = row['hour_d']
 
+                # Using the Pandas one hot feature causes a memory explosion
+                # So here we dynamically create the one hot vectors
+
                 for k in range(15, len(self.name_list)):
 
                     if self.name_list[k] == row['track_id']:
@@ -123,6 +144,17 @@ class agent:
                 j += 1
 
             i += 1
+
+    def get_gradient(self):
+        """This function computes and returns the gradients of the given 
+        model"""
+
+        with tf.GradientTape() as tape:
+
+            loss_value = self.custom_loss()
+
+        return loss_value, tape.gradient(loss_value, 
+                                self.model.trainable_variables)
 
     def get_name_list(self, data):
         """This function converts item hashes to unique integer tags with a
@@ -138,15 +170,7 @@ class agent:
 
         self.name_list = output
 
-    def get_gradient(self):
-        """This function computes and returns the gradients of the given 
-        model"""
-
-        with tf.GradientTape() as tape:
-
-            loss_value = self.custom_loss(
-
-    def get_targets(self, user_history):
+    def get_targets(self, row):
         """This function creates a one hot vector of the target track id"""
 
         output = [0] * len(self.name_list)
@@ -155,7 +179,16 @@ class agent:
 
         for track in self.name_list:
             
-            if track ==     
+            if track == row['track_id']:
+
+                output[i] == 1
+            i += 1
+
+    def train(self, user_history):
+        """This function manages the training of the model based on the provided
+        data"""
+
+
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
