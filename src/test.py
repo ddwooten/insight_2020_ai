@@ -13,7 +13,7 @@ def read_setup_test():
 
     test_value = 0
 
-    eval_case = {'train':1, 'data':'../data/songs/clean.pk', 'model':'lstm'}
+    eval_case = {'train':1, 'data':'../data/clean.pk', 'model':'lstm','epochs':1000}
 
     try:
 

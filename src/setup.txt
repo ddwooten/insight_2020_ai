@@ -1,4 +1,4 @@
 train, yes
 model, lstm
 loss, simple
-data, ../data/clean.pk
+data, ../data/clean.pk, EpOchs, 1000
