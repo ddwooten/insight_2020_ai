@@ -43,11 +43,9 @@ class agent:
 
         self.model = tf.keras.Sequential()
 
-        self.model.add(tf.keras.layers.LSTM(300, input_shape=(300, 20644)))
+        self.model.add(tf.keras.layers.Conv2D(1, (10,10), data_format = 'channels_last', input_shape=(300, 20644, 1)))
 
-#        self.model.add(tf.keras.layers.Conv2D(1, (10,10), data_format = 'channels_last', input_shape=(300, 20644)))
-
-#        self.model.add(tf.keras.Flatten())
+        self.model.add(tf.keras.layers.Flatten())
         
         self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
@@ -58,7 +56,7 @@ class agent:
 
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
-            
+        pdb.set_trace()    
         self.pred = self.model(self.factors, training = self.is_train)
 
         tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
@@ -82,7 +80,7 @@ class agent:
         # Reset the holding arrays
 
         self.factors = np.zeros((1, 300, 
-                        (15 + len(self.name_list))))
+                        (15 + len(self.name_list)), 1))
 
         self.targets = []
         
@@ -110,35 +108,35 @@ class agent:
 
                 break
 
-            self.factors[i, j, 0] = row['score']
+            self.factors[i, j, 0,0] = row['score']
 
-            self.factors[i, j, 1] = row['instrumentalness']
+            self.factors[i, j, 1,0] = row['instrumentalness']
 
-            self.factors[i, j, 2] = row['liveness']
+            self.factors[i, j, 2,0] = row['liveness']
 
-            self.factors[i, j, 3] = row['speechiness']
+            self.factors[i, j, 3, 0] = row['speechiness']
 
-            self.factors[i, j, 4] = row['danceability']
+            self.factors[i, j, 4, 0] = row['danceability']
 
-            self.factors[i, j, 5] = row['valence']
+            self.factors[i, j, 5, 0] = row['valence']
 
-            self.factors[i, j, 6] = row['loudness']
+            self.factors[i, j, 6, 0] = row['loudness']
 
-            self.factors[i, j, 7] = row['tempo']
+            self.factors[i, j, 7, 0] = row['tempo']
 
-            self.factors[i, j, 8] = row['acousticness']
+            self.factors[i, j, 8, 0] = row['acousticness']
 
-            self.factors[i, j, 9] = row['energy']
+            self.factors[i, j, 9, 0] = row['energy']
 
-            self.factors[i, j, 10] = row['mode']
+            self.factors[i, j, 10, 0] = row['mode']
 
-            self.factors[i, j, 11] = row['key']
+            self.factors[i, j, 11, 0] = row['key']
 
-            self.factors[i, j, 12] = row['day_w']
+            self.factors[i, j, 12, 0] = row['day_w']
 
-            self.factors[i, j, 13] = row['day_m']
+            self.factors[i, j, 13, 0] = row['day_m']
 
-            self.factors[i, j, 14] = row['hour_d']
+            self.factors[i, j, 14, 0] = row['hour_d']
 
             # Using the Pandas one hot feature causes a memory explosion
             # So here we dynamically create the one hot vectors
@@ -147,7 +145,7 @@ class agent:
 
                 if self.name_list[k] == row['track_id']:
 
-                    self.factors[i, j, k] = 1.0
+                    self.factors[i, j, k, 0] = 1.0
 
                 k += 1
                 
