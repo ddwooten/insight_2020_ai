@@ -1,7 +1,9 @@
 # This file contains the agent class and all of its associated methods
 # This 'agent' is a reinforcement learning agent.
 
+import numpy as np
 import tensorflow as tf
+import pdb
 
 class agent:
 
@@ -29,10 +31,10 @@ class agent:
     
     def add_model(self):
         """This function calls the appropriate model builder"""
-
+        
         if self.model_name == 'lstm':
 
-            self.model = self.add_model_lstm()
+            self.add_model_lstm()
 
     def add_model_lstm(self):
         """This function buils a basic lstm model"""
@@ -50,9 +52,9 @@ class agent:
 
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
-
+            
         self.pred = self.model(self.factors, training = self.is_train)
-        
+
         tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
                                         from_logits=False)
 
@@ -73,79 +75,77 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors = np.zeroes(len(user_history), 300, 
-                        15 + len(self.name_list))
+        self.factors = np.zeros((len(user_history), 300, 
+                        (15 + len(self.name_list))))
 
         self.targets = []
         
+        # This i here is to conform with tensorflow input expectations
+
         i = 0
 
-        for history in user_history:
+        j = 0
 
-            j = 0
+        for index, row in user_history.iterrows():
 
-            for index, row in history.iterrows():
+            # The last entry in a history is the one we attempt to predict
 
-                # The last entry in a history is the one we attempt to predict
+            if j == (user_history.shape[0] - 1):
 
-                if j == (history.shape[0] - 1):
+                self.targets.append(self.get_targets(row))
 
-                    self.targets.append(self.get_targets(row))
+                break
+            
+            # Truncating maximum history to ~1 day of continuous listening
 
-                    break
+            if j == 300:
+
+                self.targets.append(self.get_targets(row))
+
+                break
+
+            self.factors[i, j, 0] = row['score']
+
+            self.factors[i, j, 1] = row['instrumentalness']
+
+            self.factors[i, j, 2] = row['liveness']
+
+            self.factors[i, j, 3] = row['speechiness']
+
+            self.factors[i, j, 4] = row['danceability']
+
+            self.factors[i, j, 5] = row['valence']
+
+            self.factors[i, j, 6] = row['loudness']
+
+            self.factors[i, j, 7] = row['tempo']
+
+            self.factors[i, j, 8] = row['acousticness']
+
+            self.factors[i, j, 9] = row['energy']
+
+            self.factors[i, j, 10] = row['mode']
+
+            self.factors[i, j, 11] = row['key']
+
+            self.factors[i, j, 12] = row['day_w']
+
+            self.factors[i, j, 13] = row['day_m']
+
+            self.factors[i, j, 14] = row['hour_d']
+
+            # Using the Pandas one hot feature causes a memory explosion
+            # So here we dynamically create the one hot vectors
+
+            for k in range(15, len(self.name_list)):
+
+                if self.name_list[k] == row['track_id']:
+
+                    self.factors[i, j, k] = 1.0
+
+                k += 1
                 
-                # Truncating maximum history to ~1 day of continuous listening
-
-                if j == 300:
-
-                    self.targets.append(self.get_targets(row))
-
-                    break
-
-                self.factors[i, j, 0] = row['score']
-
-                self.factors[i, j, 1] = row['instrumentalness']
-
-                self.factors[i, j, 2] = row['liveness']
-
-                self.factors[i, j, 3] = row['speechiness']
-
-                self.factors[i, j, 4] = row['danceability']
-
-                self.factors[i, j, 5] = row['valence']
-
-                self.factors[i, j, 6] = row['loudness']
-
-                self.factors[i, j, 7] = row['tempo']
-
-                self.factors[i, j, 8] = row['acousticness']
-
-                self.factors[i, j, 9] = row['energy']
-
-                self.factors[i, j, 10] = row['mode']
-
-                self.factors[i, j, 11] = row['key']
-
-                self.factors[i, j, 12] = row['day_w']
-
-                self.factors[i, j, 13] = row['day_m']
-
-                self.factors[i, j, 14] = row['hour_d']
-
-                # Using the Pandas one hot feature causes a memory explosion
-                # So here we dynamically create the one hot vectors
-
-                for k in range(15, len(self.name_list)):
-
-                    if self.name_list[k] == row['track_id']:
-
-                        self.factors[i, j, k] = 1.0
-
-                    k += 1
-                    
-                j += 1
-
-            i += 1
+            j += 1
 
     def get_gradient(self):
         """This function computes and returns the gradients of the given 
@@ -190,6 +190,10 @@ class agent:
     def train(self, user_history):
         """This function manages the training of the model based on the provided
         data"""
+
+        self.factorize(user_history)
+
+        pdb.set_trace()
         
         loss_value, gradients = self.get_gradient() 
 
@@ -205,7 +209,7 @@ class agent:
         function and a model"""
 
         self.get_name_list(data)
-        
+
         self.model_name = name
 
         self.is_train = train 
