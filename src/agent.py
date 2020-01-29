@@ -39,9 +39,15 @@ class agent:
     def add_model_lstm(self):
         """This function buils a basic lstm model"""
 
+        tf.keras.backend.set_floatx('float64')
+
         self.model = tf.keras.Sequential()
 
-        self.model.add(tf.keras.layers.LSTM(300))
+        self.model.add(tf.keras.layers.LSTM(300, input_shape=(300, 20644)))
+
+#        self.model.add(tf.keras.layers.Conv2D(1, (10,10), data_format = 'channels_last', input_shape=(300, 20644)))
+
+#        self.model.add(tf.keras.Flatten())
         
         self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
@@ -75,7 +81,7 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors = np.zeros((len(user_history), 300, 
+        self.factors = np.zeros((1, 300, 
                         (15 + len(self.name_list))))
 
         self.targets = []
@@ -193,8 +199,6 @@ class agent:
 
         self.factorize(user_history)
 
-        pdb.set_trace()
-        
         loss_value, gradients = self.get_gradient() 
 
         self.optimizer.apply_gradients(zip(gradients, 
@@ -202,7 +206,7 @@ class agent:
 
         self.loss(loss_value)
 
-        self.accuracy(self.targets, self.prod)
+        self.accuracy(self.targets, self.pred)
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss

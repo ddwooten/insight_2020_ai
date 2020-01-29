@@ -32,11 +32,17 @@ class state:
 
                 user = None
 
-        history_start = random.randint(0, \
-                        (self.data[self.data['user_id'] == user].shape[0] - 2))
+        history_start = 0
 
-        history_end = random.randint(history_start, \
-                        (self.data[self.data['user_id'] == user].shape[0]))
+        history_end = 0
+
+        while (history_end - history_start) < 3:
+
+            history_start = random.randint(0, \
+                        (self.data[self.data['user_id'] == user].shape[0] - 3))
+
+            history_end = random.randint(history_start, \
+                            (self.data[self.data['user_id'] == user].shape[0]))
 
         self.current_user_history = self.data[self.data[\
             'user_id'] == user].iloc[history_start:history_end,]

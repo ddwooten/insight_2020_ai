@@ -38,7 +38,6 @@ class environment:
         for epoch in range(self.setup_dict['epochs']):
 
             self.state.get_random_user_history()
-            pdb.set_trace()
 
             self.agent.train(self.state.current_user_history)
 
