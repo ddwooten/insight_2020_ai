@@ -25,7 +25,7 @@ class agent:
 
         self.targets = []
 
-        self.train = None
+        self.is_train = None
     
     def add_model(self):
         """This function calls the appropriate model builder"""
@@ -40,18 +40,18 @@ class agent:
         self.model = tf.keras.Sequential()
 
         self.model.add(tf.keras.layers.LSTM(300))
-
-        self.model.add(tf.keras.layers.Dense(len(self.name_dict[0]), 
+        
+        self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
 
         # Don't forget an optimizer!
 
-        self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01])
+        self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
 
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
 
-        self.pred = self.model(self.factors, training = self.train)
+        self.pred = self.model(self.factors, training = self.is_train)
         
         tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
                                         from_logits=False)
@@ -102,7 +102,7 @@ class agent:
 
                     break
 
-		self.factors[i, j, 0] = row['score']
+                self.factors[i, j, 0] = row['score']
 
                 self.factors[i, j, 1] = row['instrumentalness']
 
@@ -162,15 +162,15 @@ class agent:
         """This function converts item hashes to unique integer tags with a
         corresponding decrpytion dictionary"""
 
-        output = []
+        self.name_list = [''] * len(data.track_id.unique())
         
         i = 0
 
-        for track in data.unique():
+        for track in data.track_id.unique():
 
-            output[i] = track
+            self.name_list[i] = track
 
-        self.name_list = output
+            i += 1
 
     def get_targets(self, row):
         """This function creates a one hot vector of the target track id"""
@@ -200,21 +200,18 @@ class agent:
 
         self.accuracy(self.targets, self.prod)
 
-
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
 
+        self.get_name_list(data)
+        
         self.model_name = name
 
-        self.train = 1 if train == 'yes' else self.train = 0
-
-        self.name_dict = self.get_name_dict(data)
+        self.is_train = train 
 
         self.loss = tf.keras.metrics.Mean()
 
         self.accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
 
-        self.add_model(self.model_name)
-
-
+        self.add_model()

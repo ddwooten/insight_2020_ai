@@ -15,17 +15,7 @@ class state:
 
         self.val_set = None
 
-    def one_hot(self):
-        """This function converts track ids to a one hot vector"""
-
-        self.data =  pd.concat([self.data, pd.get_dummies(self.data.track_id)],
-                                axis = 1)
-
-        self.data = self.data.drop(axis=1, columns=['user_id','hashtag',
-            'created_at', 'tweet_lang', 'current_track', 'previous_track',
-            'zoned', 'aware'])
-
-    def pull_random_user_history():
+    def get_random_user_history(self):
         """This function pull a random user history of random length"""
 
         user = None
@@ -34,7 +24,7 @@ class state:
 
             user = random.choice(self.data.user_id.unique())
 
-            if user.user_id in self.val_set:
+            if user in self.val_set:
 
                 user = None
 
@@ -51,6 +41,16 @@ class state:
         self.current_user_history = self.data[self.data[\
             'user_id'] == user].iloc[history_start:history_end,]
 
+    def one_hot(self):
+        """This function converts track ids to a one hot vector"""
+
+        self.data =  pd.concat([self.data, pd.get_dummies(self.data.track_id)],
+                                axis = 1)
+
+        self.data = self.data.drop(axis=1, columns=['user_id','hashtag',
+            'created_at', 'tweet_lang', 'current_track', 'previous_track',
+            'zoned', 'aware'])
+
     def report_record(self, loc):
         """This function prints the entry of data corresponding to the index
         given by loc"""
@@ -58,9 +58,10 @@ class state:
         print("{}\n".format(self.data.loc[loc]))
 
         
-    def set_aide_validation_set():
+    def set_aside_validation_set(self):
         """This function creates a list of user ids equal to 20% of the input
         data, these user ids are for validation"""
 
-        self.val_set = self.data.user_id.sample(math.ceil(0.20 * \
-                                                    self.data.size[0])).values()
+        sample_size = math.ceil(0.20 * self.data.shape[0])
+
+        self.val_set = self.data.user_id.sample(sample_size)
