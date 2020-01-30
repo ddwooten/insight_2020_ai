@@ -41,3 +41,5 @@ class environment:
 
             self.agent.train(self.state.current_user_history)
 
+            print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
+                                                        self.agent.loss_value))

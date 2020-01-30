@@ -10,13 +10,13 @@ class agent:
 
     def __init__(self):
         
-        self.accuracy_value = None
+        self.accuracy_value = 0.0 
          
         self.factors = None
 
         self.loss = None
 
-        self.loss_value = None
+        self.loss_value = 0.0
 
         self.model = None
 
@@ -24,11 +24,15 @@ class agent:
 
         self.name_list = None
 
+        self.num_correct = 0
+
+        self.num_wrong = 0
+
         self.optimizer = None
 
         self.pred = None
 
-        self.targets = []
+        self.targets = None
 
         self.is_train = None
     
@@ -44,7 +48,7 @@ class agent:
 
         self.model = tf.keras.Sequential()
 
-        self.model.add(tf.keras.layers.LSTM(5, input_shape=(300,len(self.name_list) + 15)))
+        self.model.add(tf.keras.layers.LSTM(20, input_shape=(300,len(self.name_list) + 15)))
 
         self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
@@ -54,17 +58,26 @@ class agent:
         self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
 
     def custom_accuracy(self):
-        """This function recreates the tf categorical cross entropy loss
+        """This function recreates the tf categorical accuracy 
         function. This is required as a workaround to bug #11749 for keras."""
         
-        pdb.set_trace()
+        # If the maximum value (whos index is given by np.argmax) corresponds
+        # with the correct value for self.targets value will have a value of 1,
+        # otherwise, 0
 
-        holder = np.argmax(self.pred)
+        value = self.targets[np.argmax(self.pred)]
 
-        holder = np.array(holder)
+        if value > 0:
 
-        self.accuracy_value = sk.accuracy_score(self.targets, holder)
+            self.num_correct += 1
 
+        else:
+
+            self.num_wrong += 1
+
+
+        self.accuracy_value = (float(self.num_correct) / float((self.num_correct + self.num_wrong))) * 100.0
+        
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
 
@@ -197,7 +210,7 @@ class agent:
             
             if track == row['track_id']:
 
-                output[i] == 1
+                output[i] = 1
 
             i += 1
 
