@@ -3,17 +3,20 @@
 
 import numpy as np
 import tensorflow as tf
+from sklearn import metrics as sk
 import pdb
 
 class agent:
 
     def __init__(self):
         
-        self.accuracy = None
+        self.accuracy_value = None
          
         self.factors = None
 
         self.loss = None
+
+        self.loss_value = None
 
         self.model = None
 
@@ -41,10 +44,8 @@ class agent:
 
         self.model = tf.keras.Sequential()
 
-        self.model.add(tf.keras.layers.LSTM(3, input_shape=(3,20644)))
+        self.model.add(tf.keras.layers.LSTM(5, input_shape=(300,len(self.name_list) + 15)))
 
-        self.model.add(tf.keras.layers.Flatten())
-        
         self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
 
@@ -52,9 +53,23 @@ class agent:
 
         self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
 
+    def custom_accuracy(self):
+        """This function recreates the tf categorical cross entropy loss
+        function. This is required as a workaround to bug #11749 for keras."""
+        
+        pdb.set_trace()
+
+        holder = np.argmax(self.pred)
+
+        holder = np.array(holder)
+
+        self.accuracy_value = sk.accuracy_score(self.targets, holder)
+
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
+
         pdb.set_trace()
+        
         self.pred = self.model(self.factors, training = self.is_train)
 
         tensor_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
@@ -76,11 +91,9 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors = np.zeros((len(user_history), 3, 
+        self.factors = np.zeros((1, 300, 
                         (15 + len(self.name_list))))
 
-        self.targets = []
-        
         # This i here is to conform with tensorflow input expectations
 
         i = 0
@@ -93,15 +106,15 @@ class agent:
 
             if j == (user_history.shape[0] - 1):
 
-                self.targets.append(self.get_targets(row))
+                self.targets = self.get_targets(row)
 
                 break
             
             # Truncating maximum history to ~1 day of continuous listening
 
-            if j == 3:
+            if j == 300:
 
-                self.targets.append(self.get_targets(row))
+                self.targets = self.get_targets(row)
 
                 break
 
@@ -201,9 +214,9 @@ class agent:
         self.optimizer.apply_gradients(zip(gradients, 
                                         self.model.trainable_variables))
 
-        self.loss(loss_value)
+        self.loss_value = self.loss(loss_value)
 
-        self.accuracy(self.targets, self.pred)
+        self.custom_accuracy()
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
@@ -216,7 +229,5 @@ class agent:
         self.is_train = train 
 
         self.loss = tf.keras.metrics.Mean()
-
-        self.accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
 
         self.add_model()
