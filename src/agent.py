@@ -81,8 +81,6 @@ class agent:
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
 
-        pdb.set_trace()
-        
         self.pred = self.model(self.factors, training = self.is_train)
 
         tensor_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
@@ -230,6 +228,32 @@ class agent:
         self.loss_value = self.loss(loss_value)
 
         self.custom_accuracy()
+
+    def querry(self, user_history):
+        """This function, given a user history, attempts to provide a suitable
+        recommendation"""
+
+        self.factorize(user_history)
+
+        self.pred = self.model(self.factors, training = self.is_train)
+
+        print("The recommendation is {}.\n".format(self.name_list[np.argmax(self.pred)]))
+
+    def ready_agent(self, data, model_path, train):
+        """This function sets up a working agent - one complete with a loss
+        function and a model"""
+
+        self.get_name_list(data)
+
+        self.model_name = name
+
+        self.is_train = train 
+
+        self.model = tf.saved_model.load(model_path)
+
+        if self.model is not None:
+            
+            print("Model {} sucessuflly loaded.\n".format(model_path))
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss

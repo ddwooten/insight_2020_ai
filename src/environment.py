@@ -1,5 +1,9 @@
 # This file contains the evironment class and all of its methods
+
 import pdb
+import tensorflow as tf
+from datetime import datetime
+
 class environment:
 
     def __init__(self, agent, state, setup_dict):
@@ -43,3 +47,20 @@ class environment:
 
             print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))
+        # Save the model now that it has been trained
+
+        model_name = 'model_{}'.format(datetime.now())
+
+        tf.saved_model.save(self.agent.model, '../models/' + model_name)
+
+    def querry_agent(self):
+        """This function requests a recommendation of an agent"""
+
+        self.agent.ready_agent(self.state.data,
+                                self.setup_dict['model_path'], 
+                                self.setup_dict['train'])
+
+        self.state.get_random_user_history()
+
+        self.agent.querry(self.state.current_user_history)
+
