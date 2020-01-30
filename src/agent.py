@@ -42,6 +42,8 @@ class agent:
         self.model = tf.keras.Sequential()
 
         self.model.add(tf.keras.layers.LSTM(3, input_shape=(3,20644)))
+
+        self.model.add(tf.keras.layers.Flatten())
         
         self.model.add(tf.keras.layers.Dense(len(self.name_list), 
                                              activation = 'softmax'))
@@ -52,11 +54,10 @@ class agent:
 
     def custom_loss(self):
         """This function manages the custom loss for the RL agent"""
-            
+        pdb.set_trace()
         self.pred = self.model(self.factors, training = self.is_train)
 
-        tensor_loss = tf.keras.losses.SparseCategoricalCrossentropy(
-                                        from_logits=False)
+        tensor_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
 
         return(tensor_loss(self.targets, self.pred))
 
@@ -187,6 +188,8 @@ class agent:
 
             i += 1
 
+        return(output)
+
     def train(self, user_history):
         """This function manages the training of the model based on the provided
         data"""
@@ -200,7 +203,7 @@ class agent:
 
         self.loss(loss_value)
 
-        self.accuracy(self.targets, self.prod)
+        self.accuracy(self.targets, self.pred)
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
