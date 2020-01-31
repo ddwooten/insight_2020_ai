@@ -17,7 +17,7 @@ class environment:
     def results(self):
         """This function returns simulation results"""
 
-        return(self.agent.accuracy.result(), self.agent.loss.result())
+        return(self.agent.accuracy_value, self.agent.loss_value)
 
     def run_sim(self):
         """This function oversees execution of the simulation"""
