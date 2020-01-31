@@ -56,6 +56,11 @@ class environment:
 
                 tf.saved_model.save(self.agent.model, '../models/' + model_name)
 
+            model_name = 'model_end_'.format(datetime.now())
+
+            tf.saved_model.save(self.agent.model, '../models/' + model_name)
+
+
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
 
