@@ -2,3 +2,4 @@ train, yes
 model, lstm
 loss, simple
 data, ../data/clean.pk, EpOchs, 1000
+model_Path,     ../models/in_service.hdf5
