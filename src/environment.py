@@ -47,11 +47,13 @@ class environment:
 
             print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))
-        # Save the model now that it has been trained
+            if np.mod(100, epoch) == 0: 
 
-        model_name = 'model_{}'.format(datetime.now())
+                # Save the model now that it has been trained
 
-        tf.saved_model.save(self.agent.model, '../models/' + model_name)
+                model_name = 'model_{}'.format(datetime.now())
+
+                tf.saved_model.save(self.agent.model, '../models/' + model_name)
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
