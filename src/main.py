@@ -45,13 +45,21 @@ def main():
 
     env = environment(active_agent, active_state, setup_dict)
 
-    env.run_sim()
+    if setup_dict['train'] > 0:
 
-    results = env.results()
+        env.run_sim()
 
-    print("Accuracy:{}, Loss:{}".format(results))
+        results = env.results()
 
-    print("Exiting program gracefully.\n\n")
+        print("Accuracy:{}, Loss:{}".format(results))
+
+        print("Exiting program gracefully.\n\n")
+
+    else:
+
+        env.querry_agent()
+
+        print("Exiting program gracefully.\n\n")
     
 if __name__ == '__main__':
 
