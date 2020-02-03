@@ -245,7 +245,7 @@ class agent:
 
         self.get_name_list(data)
 
-        self.model_name = name
+        self.model_name = model_path 
 
         self.is_train = train 
 
