@@ -51,6 +51,44 @@ class state:
         self.current_user_history = self.data[self.data[\
             'user_id'] == user].iloc[history_start:history_end,]
 
+    def get_sample_input(self):
+        """This function pull a random user history of random length"""
+
+        user = None
+
+        while user is None:
+
+            user = random.choice(self.data.user_id.unique())
+
+            pdb.set_trace()
+
+            if self.val_set is not None:
+
+                if user in self.val_set:
+
+                    user = None
+
+            if self.data[self.data['user_id'] == user].shape[0] < 3:
+
+                user = None
+
+        history_start = 0
+
+        history_end = 0
+
+        while (history_end - history_start) < 3:
+
+            history_start = random.randint(0, \
+                        (self.data[self.data['user_id'] == user].shape[0] - 3))
+
+            history_end = random.randint(history_start, \
+                            (self.data[self.data['user_id'] == user].shape[0]))
+
+        self.data[self.data[\
+            'user_id'] == user].iloc[history_start:history_end,].to_pickle('../data/predict.pk')
+
+        self.current_user_history = pd.read_pickle('../data/predict.pk')
+
     def one_hot(self):
         """This function converts track ids to a one hot vector"""
 

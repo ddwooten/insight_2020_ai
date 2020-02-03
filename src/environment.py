@@ -68,7 +68,7 @@ class environment:
                                 self.setup_dict['model_path'], 
                                 self.setup_dict['train'])
 
-        self.state.get_random_user_history()
+        self.state.get_sample_input()
 
         self.agent.querry(self.state.current_user_history)
 
