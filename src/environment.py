@@ -2,6 +2,7 @@
 
 import pdb
 import tensorflow as tf
+import numpy as np
 from datetime import datetime
 
 class environment:
@@ -17,7 +18,7 @@ class environment:
     def results(self):
         """This function returns simulation results"""
 
-        return(self.agent.accuracy.result(), self.agent.loss.result())
+        return(self.agent.accuracy_value, self.agent.loss_value)
 
     def run_sim(self):
         """This function oversees execution of the simulation"""
@@ -47,11 +48,18 @@ class environment:
 
             print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))
-        # Save the model now that it has been trained
+            if np.mod(100, epoch) == 0: 
 
-        model_name = 'model_{}'.format(datetime.now())
+                # Save the model now that it has been trained
 
-        tf.saved_model.save(self.agent.model, '../models/' + model_name)
+                model_name = 'model_{}'.format(datetime.now())
+
+                tf.saved_model.save(self.agent.model, '../models/' + model_name)
+
+            model_name = 'model_end_'.format(datetime.now())
+
+            tf.saved_model.save(self.agent.model, '../models/' + model_name)
+
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
