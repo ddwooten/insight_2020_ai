@@ -249,7 +249,7 @@ class agent:
 
         self.is_train = train 
 
-        self.model = tf.saved_model.load(model_path)
+        self.model = tf.keras.models.load_model(model_path)
 
         if self.model is not None:
             
