@@ -10,23 +10,27 @@ class agent:
 
     def __init__(self):
         
-        self.accuracy_value = 0.0 
+        self.accuracy_value_actor = 0.0 
+
+        self.accuracy_value_critic = 0.0
          
-        self.factors = None
+        self.factors_actor = None
 
-        self.loss = None
+        self.factors_critic = None
 
-        self.loss_value = 0.0
+        self.loss_value_actor = 0.0
 
-        self.model = None
+        self.loss_value_critic = 0.0
+
+        self.model_actor = None
+
+        self.model_critic = None
 
         self.model_name = None
 
         self.name_list = None
 
-        self.num_correct = 0
-
-        self.num_wrong = 0
+        self.num_reward = 0
 
         self.optimizer = None
 
@@ -44,7 +48,7 @@ class agent:
             self.add_model_lstm()
 
     def add_model_lstm(self):
-        """This function buils a basic lstm model"""
+        """This function buils a stm model"""
 
         self.model = tf.keras.Sequential()
 
@@ -249,7 +253,7 @@ class agent:
 
         self.is_train = train 
 
-        self.model = tf.keras.models.load_model(model_path)
+        self.model = tf.saved_model.load(model_path)
 
         if self.model is not None:
             
@@ -264,7 +268,5 @@ class agent:
         self.model_name = name
 
         self.is_train = train 
-
-        self.loss = tf.keras.metrics.Mean()
 
         self.add_model()
