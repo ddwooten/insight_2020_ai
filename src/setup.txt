@@ -1,5 +1,5 @@
 train, no 
 model, lstm
 loss, simple
-data, ../data/clean.pk, EpOchs, 1000
-model_Path,     ../models/model
+data, ../data/clean.pk, EpOchs, 10
+model_Path,     ../models/predict

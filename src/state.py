@@ -24,8 +24,6 @@ class state:
 
             user = random.choice(self.data.user_id.unique())
 
-            pdb.set_trace()
-
             if self.val_set is not None:
 
                 if user in self.val_set:
@@ -59,8 +57,6 @@ class state:
         while user is None:
 
             user = random.choice(self.data.user_id.unique())
-
-            pdb.set_trace()
 
             if self.val_set is not None:
 
