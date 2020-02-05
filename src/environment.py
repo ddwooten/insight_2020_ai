@@ -44,7 +44,13 @@ class environment:
 
             self.state.get_random_user_history()
 
-            self.agent.train(self.state.current_user_history)
+            self.agent.predict(self.state.current_user_history)
+
+            self.state.produce(self.agent.pred, 0.1)
+
+            self.state.divergence()
+
+            self.agent.propogate(self.state.divergence)
 
             print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))

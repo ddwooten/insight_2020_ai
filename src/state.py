@@ -13,7 +13,44 @@ class state:
         
         self.data = data 
 
+        self.product = None
+
         self.val_set = None
+
+    def divergence():
+        """This function computes the minimum kl divergence between a given
+        sequence and the total user history"""
+
+        user = self.data[self.data.user_id==self.current_user_history.user_id]
+
+        # Key is neglected as it is categorical not an actual scale or measure
+
+        user_array = user.loc[,['instrumentalness', 'liveness', 'speechiness',
+                                'danceability', 'valence', 'loudness', 'tempo',
+                                'acousticness', 'energy', 'mode']]
+
+        selection_array = self.current_user_history.loc[,['instrumentalness', 
+                                'liveness','speechiness',
+                                'danceability', 'valence', 'loudness', 'tempo',
+                                'acousticness', 'energy', 'mode']]
+
+        start = 0
+
+        end = self.current_user_history.shape[0] - 1
+
+        self.divergence = 1E18
+
+        while end < user.shape[0]:
+
+            divergence = -np.sum(np.multiply(user_array[start:end,:], np.log(np.divide(selection_array, user_array[start:end.:]))))
+
+            if divergence < self.divergence:
+
+                self.divergence = divergence
+
+            start = start + self.current_user_history.shape[0]
+
+            end = end + self.current_user_history.shape[0]
 
     def get_random_user_history(self):
         """This function pull a random user history of random length"""
@@ -85,15 +122,52 @@ class state:
 
         self.current_user_history = pd.read_pickle('../data/predict.pk')
 
-    def one_hot(self):
-        """This function converts track ids to a one hot vector"""
+    def produce(self, attr, relax):
+        """This function selects a song from data based on its match to spotify
+        dimentions"""
 
-        self.data =  pd.concat([self.data, pd.get_dummies(self.data.track_id)],
-                                axis = 1)
+        index = random.randint(0, 11)
 
-        self.data = self.data.drop(axis=1, columns=['user_id','hashtag',
-            'created_at', 'tweet_lang', 'current_track', 'previous_track',
-            'zoned', 'aware'])
+        attr_low = [0] * 11
+
+        attr_high = [0] * 11
+
+        for i in range(11):
+
+            if i == index:
+
+                attr_low[i] = attr[i] - (relax/2.0)
+
+                attr_high[i] = attr[i] + (relax/2.0)
+
+            else:
+
+                attr_low[i] = attr[i]
+
+                attr_high[i] = attr[i]
+
+        self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &
+                                 (self.data.instrumentalness <= attr_high[0]) &
+                                 (self.data.liveness >= attr_low[1]) &
+                                 (self.data.liveness <= attr_high[1]) &
+                                 (self.data.speechiness >= attr_low[1]) &
+                                 (self.data.speechiness <= attr_high[1]) &
+                                 (self.data.danceability >= attr_low[1]) &
+                                 (self.data.danceability <= attr_high[1]) &
+                                 (self.data.valence >= attr_low[1]) &
+                                 (self.data.valence <= attr_high[1]) &
+                                 (self.data.loudness >= attr_low[1]) &
+                                 (self.data.loudness <= attr_high[1]) &
+                                 (self.data.tempo >= attr_low[1]) &
+                                 (self.data.tempo <= attr_high[1]) &
+                                 (self.data.acousticness >= attr_low[1]) &
+                                 (self.data.acousticness <= attr_high[1]) &
+                                 (self.data.energy >= attr_low[1]) &
+                                 (self.data.energy <= attr_high[1]) &
+                                 (self.data.mode >= attr_low[1]) &
+                                 (self.data.mode <= attr_high[1]) &
+                                 (self.data.key >= attr_low[1]) &
+                                 (self.data.key <= attr_high[1])].sample(1)
 
     def report_record(self, loc):
         """This function prints the entry of data corresponding to the index
