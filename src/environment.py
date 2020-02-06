@@ -11,6 +11,12 @@ class environment:
 
         self.agent = agent
 
+        self.loss_agent = None
+
+        self.loss_critic = None
+
+        self.predictions = []
+
         self.setup_dict = setup_dict
 
         self.state = state
@@ -34,6 +40,12 @@ class environment:
     def train_agent(self):
         """This function manages the training of an agent"""
 
+        # Reset the loss variables
+
+        self.agent_loss = []
+
+        self.critic_loss = []
+
         self.agent.wake_agent(self.state.data,
                                 self.setup_dict['model'], 
                                 self.setup_dict['train'])
@@ -52,20 +64,37 @@ class environment:
 
             self.agent.propogate(self.state.divergence, self.state.product)
 
-            print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
+            self.loss_agent.append(1.0 - self.agent.reward)
+
+            self.loss_critic.append(self.state.divergence)
+
+            print("Actor Loss: {}\nCritic Loss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))
             if np.mod(100, epoch) == 0: 
 
                 # Save the model now that it has been trained
 
-                model_name = 'model_{}'.format(datetime.now())
+                model_name = 'agent_model_{}'.format(datetime.now())
 
-                tf.saved_model.save(self.agent.model, '../models/' + model_name)
+                tf.saved_model.save(self.agent.model_agent, '../models/' + model_name)
 
-        model_name = 'model_end_'.format(datetime.now())
+                model_name = 'critic_model_{}'.format(datetime.now())
 
-        tf.saved_model.save(self.agent.model, '../models/' + model_name)
+                tf.saved_model.save(self.agent.model_critic, '../models/' + model_name)
+        
+        model_name = 'end_agent_model_{}'.format(datetime.now())
 
+        tf.saved_model.save(self.agent.model_agent, '../models/' + model_name)
+
+        model_name = 'end_critic_model_{}'.format(datetime.now())
+
+        tf.saved_model.save(self.agent.model_critic, '../models/' + model_name)
+
+        # Save the loss arrays as csvs
+
+        np.savetxt('./agent_loss.csv', self.agent_loss, delimiter=',')
+
+        np.savetxt('./critic_loss.csv', self.critic_loss, delimiter=',')
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
@@ -77,4 +106,10 @@ class environment:
         self.state.get_sample_input()
 
         self.agent.querry(self.state.current_user_history)
+
+        self.state.produce(self.agent.pred, 0.1)
+
+        self.predictions.append(self.state.product.track_id.value)
+
+        print("The prediction made was {}.\n".format(self.state.product.track_id.value))
 
