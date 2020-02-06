@@ -27,12 +27,12 @@ class state:
 
         user_array = user.loc[['instrumentalness', 'liveness', 'speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'mode', 'key']]
+                                'acousticness', 'energy', 'm', 'k']]
 
         selection_array = self.current_user_history.append(self.produce).loc[['instrumentalness', 
                                 'liveness','speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'mode', 'key']]
+                                'acousticness', 'energy', 'm', 'k']]
         
         user_array = user_array.to_numpy()
 
@@ -152,28 +152,30 @@ class state:
 
                 attr_high[i] = attr[0][i]
 
-        self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &
-                                 (self.data.instrumentalness <= attr_high[0]) &
-                                 (self.data.liveness >= attr_low[1]) &
-                                 (self.data.liveness <= attr_high[1]) &
-                                 (self.data.speechiness >= attr_low[2]) &
-                                 (self.data.speechiness <= attr_high[2]) &
-                                 (self.data.danceability >= attr_low[3]) &
-                                 (self.data.danceability <= attr_high[3]) &
-                                 (self.data.valence >= attr_low[4]) &
-                                 (self.data.valence <= attr_high[4]) &
-                                 (self.data.loudness >= attr_low[5]) &
-                                 (self.data.loudness <= attr_high[5]) &
-                                 (self.data.tempo >= attr_low[6]) &
-                                 (self.data.tempo <= attr_high[6]) &
-                                 (self.data.acousticness >= attr_low[7]) &
-                                 (self.data.acousticness <= attr_high[7]) &
-                                 (self.data.energy >= attr_low[8]) &
-                                 (self.data.energy <= attr_high[8]) &
-                                 (self.data.mode >= attr_low[9]) &
-                                 (self.data.mode <= attr_high[9]) &
-                                 (self.data.key >= attr_low[10]) &
-                                 (self.data.key <= attr_high[10])].sample(1)
+        pdb.set_trace()
+
+        self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &\
+                                 (self.data.instrumentalness <= attr_high[0]) &\
+                                 (self.data.liveness >= attr_low[1]) &\
+                                 (self.data.liveness <= attr_high[1]) &\
+                                 (self.data.speechiness >= attr_low[2]) &\
+                                 (self.data.speechiness <= attr_high[2]) &\
+                                 (self.data.danceability >= attr_low[3]) &\
+                                 (self.data.danceability <= attr_high[3]) &\
+                                 (self.data.valence >= attr_low[4]) &\
+                                 (self.data.valence <= attr_high[4]) &\
+                                 (self.data.loudness >= attr_low[5]) &\
+                                 (self.data.loudness <= attr_high[5]) &\
+                                 (self.data.tempo >= attr_low[6]) &\
+                                 (self.data.tempo <= attr_high[6]) &\
+                                 (self.data.acousticness >= attr_low[7]) &\
+                                 (self.data.acousticness <= attr_high[7]) &\
+                                 (self.data.energy >= attr_low[8]) &\
+                                 (self.data.energy <= attr_high[8]) &\
+                                 (self.data.m >= attr_low[9]) &\
+                                 (self.data.m <= attr_high[9]) &\
+                                 (self.data.k >= attr_low[10]) &\
+                                 (self.data.k <= attr_high[10])].sample(1)
 
     def report_record(self, loc):
         """This function prints the entry of data corresponding to the index

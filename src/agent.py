@@ -99,7 +99,7 @@ class agent:
 
         self.factors_critic[i, j, 9] = ['energy']
 
-        self.factors_critic[i, j, 10] = ['mode']
+        self.factors_critic[i, j, 10] = ['m']
 
         self.factors_critic[i, j, 11] = ['k']
 
@@ -184,9 +184,9 @@ class agent:
 
             self.factors_critic[i, j, 9] = row['energy']
 
-            self.factors_agent[i, j, 10] = row['mode']
+            self.factors_agent[i, j, 10] = row['m']
 
-            self.factors_critic[i, j, 10] = row['mode']
+            self.factors_critic[i, j, 10] = row['m']
 
             self.factors_agent[i, j, 11] = row['k']
 
