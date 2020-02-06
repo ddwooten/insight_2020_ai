@@ -27,12 +27,16 @@ class state:
 
         user_array = user.loc[,['instrumentalness', 'liveness', 'speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'mode']]
+                                'acousticness', 'energy', 'mode', 'key']]
 
-        selection_array = self.current_user_history.loc[,['instrumentalness', 
+        selection_array = self.current_user_history.append(self.produce).loc[,['instrumentalness', 
                                 'liveness','speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'mode']]
+                                'acousticness', 'energy', 'mode', 'key']]
+        
+        user_array = user_array.to_numpy()
+
+        selection_array = selection_array.to_numpy()
 
         start = 0
 
@@ -42,7 +46,7 @@ class state:
 
         while end < user.shape[0]:
 
-            divergence = -np.sum(np.multiply(user_array[start:end,:], np.log(np.divide(selection_array, user_array[start:end.:]))))
+            divergence = -np.sum(np.multiply(user_array[start:end,:], np.log(np.divide(selection_array, user_array[start:end,:]))))
 
             if divergence < self.divergence:
 

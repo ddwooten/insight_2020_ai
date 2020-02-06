@@ -62,6 +62,49 @@ class agent:
         # Don't forget an optimizer!
 
         self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
+   
+    def add_prediction(self, prediciton):
+        """This function concatenates the prediciton with the critic input"""
+        
+        i = 0
+
+        if self.current_user_history.shape[0] >= 300:
+
+            j = 301
+
+            self.factors_critic = np.reshape(self.factors_critic,
+                                             (self.factors_critic.shape[0],
+                                             301, 13)) 
+
+        else:
+
+            j = self.current_user_history.shape[0]
+
+        self.factors_critic[i, j, 0] = ['avg']
+
+        self.factors_citic[i, j, 1] = ['instrumentalness']
+
+        self.factors_critic[i, j, 2] = ['liveness']
+
+        self.factors_critic[i, j, 3] = ['speechiness']
+
+        self.factors_critic[i, j, 4] = ['danceability']
+
+        self.factors_critic[i, j, 5] = ['valence']
+
+        self.factors_critic[i, j, 6] = ['loudness']
+
+        self.factors_critic[i, j, 7] = ['tempo']
+
+        self.factors_critic[i, j, 8] = ['acousticness']
+
+        self.factors_critic[i, j, 9] = ['energy']
+
+        self.factors_critic[i, j, 10] = ['mode']
+
+        self.factors_critic[i, j, 11] = ['key']
+
+        self.factors_critic[i, j, 12] = ['sd']
 
     def custom_accuracy(self):
         """This function recreates the tf categorical accuracy 
@@ -240,19 +283,24 @@ class agent:
 
         self.factorize(user_history)
 
-        self.pred = self.model_actor(self.factors, training = self.is_train)
+        self.pred = self.model_actor(self.factors_actor, training=self.is_train)
 
-    def propogate(self, divergence):
+    def propogate(self, divergence, prediction):
         """This function propogates the loss through the actor and critic"""
 
-        loss_value, gradients = self.get_gradient() 
+        self.add_prediction(prediction)
 
-        self.optimizer.apply_gradients(zip(gradients, 
+        self.reward = self.model_critic(self.factors_critic, training=self.is_train)
+        
+        gradients_actor, gradients_critic = self.get_gradient() 
+
+        self.optimizer.apply_gradients(zip(gradients_actor, 
                                         self.model_actor.trainable_variables))
 
-        self.loss_value = self.loss(loss_value)
+        self.optimizer.apply_gradients(zip(gradients_critic, 
+                                        self.model_actor.trainable_variables))
 
-        self.custom_accuracy()
+        self.loss_value_actor = 1.0 - self.reward
 
     def querry(self, user_history):
         """This function, given a user history, attempts to provide a suitable
@@ -261,8 +309,6 @@ class agent:
         self.factorize(user_history)
 
         self.pred = self.model_actor(self.factors, training = self.is_train)
-
-        print("The recommendation is {}.\n".format(self.name_list[np.argmax(self.pred)]))
 
     def ready_agent(self, data, model_path, train):
         """This function sets up a working agent - one complete with a loss

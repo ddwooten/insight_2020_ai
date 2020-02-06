@@ -50,7 +50,7 @@ class environment:
 
             self.state.divergence()
 
-            self.agent.propogate(self.state.divergence)
+            self.agent.propogate(self.state.divergence, self.state.product)
 
             print("Accuracy: {}\nLoss:{}\n\n".format(self.agent.accuracy_value,
                                                         self.agent.loss_value))
