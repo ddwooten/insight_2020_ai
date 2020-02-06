@@ -68,8 +68,8 @@ class environment:
 
             self.loss_critic.append(self.state.divergence)
 
-            print("Actor Loss: {}\nCritic Loss:{}\n\n".format(self.agent.accuracy_value,
-                                                        self.agent.loss_value))
+            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward),
+                                                        self.state.divergence))
             if np.mod(100, epoch) == 0: 
 
                 # Save the model now that it has been trained
