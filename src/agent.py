@@ -10,13 +10,13 @@ class agent:
 
     def __init__(self):
         
-        self.factors_actor = None
+        self.factors_agent = None
 
         self.factors_critic = None
 
         self.is_train = None
 
-        self.model_actor = None
+        self.model_agent = None
 
         self.model_critic = None
 
@@ -38,13 +38,13 @@ class agent:
     def add_model_lstm(self):
         """This function buils a lstm model"""
         
-        # Create the actor model
+        # Create the agent model
 
-        self.model_actor = tf.keras.Sequential()
+        self.model_agent = tf.keras.Sequential()
 
-        self.model_actor.add(tf.keras.layers.LSTM(300, input_shape=(300, 15)))
+        self.model_agent.add(tf.keras.layers.LSTM(300, input_shape=(300, 15)))
 
-        self.model_actor.add(tf.keras.layers.Dense(11, 
+        self.model_agent.add(tf.keras.layers.Dense(11, 
                                              activation = 'relu'))
         
         # Create the critic model
@@ -208,13 +208,13 @@ class agent:
         """This function computes and returns the gradients of the given 
         model"""
 
-        actor_gradients = tf.GradientTape.gradient((1.0 - self.reward),
-                                        self.model_actor.trainable_variables)
+        agent_gradients = tf.GradientTape.gradient((1.0 - self.reward),
+                                        self.model_agent.trainable_variables)
 
         critic_gradients = tf.GradientTape.gradient(divergence,
                                         self.model_critic.trainable_variables)
 
-        return (actor_gradients, critic_gradients)
+        return (agent_gradients, critic_gradients)
 
     def predict(self, user_history):
         """This function manages the training of the model based on the provided
@@ -222,7 +222,7 @@ class agent:
 
         self.factorize(user_history)
 
-        self.pred = self.model_actor(self.factors_actor, training=self.is_train)
+        self.pred = self.model_agent(self.factors_agent, training=self.is_train)
 
     def propogate(self, divergence, prediction):
         """This function propogates the loss through the actor and critic"""
@@ -231,33 +231,31 @@ class agent:
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
         
-        gradients_actor, gradients_critic = self.get_gradient(divergence) 
+        gradients_agent, gradients_critic = self.get_gradient(divergence) 
 
-        self.optimizer.apply_gradients(zip(gradients_actor, 
-                                        self.model_actor.trainable_variables))
+        self.optimizer.apply_gradients(zip(gradients_agent, 
+                                        self.model_agent.trainable_variables))
 
         self.optimizer.apply_gradients(zip(gradients_critic, 
-                                        self.model_actor.trainable_variables))
+                                        self.model_agent.trainable_variables))
 
-        self.loss_value_actor = 1.0 - self.reward
-
-    def ready_agent(self, data, actor_model_path, critic_model_path, train):
+    def ready_agent(self, data, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
 
-        self.model_actor_name = model_path 
+        self.model_agent_name = model_path 
 
         self.is_train = train 
 
-        self.model_actor = tf.saved_model.load(actor_model_path)
+        self.model_agent = tf.saved_model.load(agent_model_path)
 
-        if self.model_actor is not None:
+        if self.model_agent is not None:
             
-            print("Actor Model {} sucessuflly loaded.\n".format(actor_model_path))
+            print("Actor Model {} sucessuflly loaded.\n".format(agent_model_path))
 
         self.model_critic = tf.saved_model.load(critic_model_path)
 
-        if self.model_actor is not None:
+        if self.model_agent is not None:
             
             print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
 
