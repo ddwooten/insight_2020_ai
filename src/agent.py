@@ -10,17 +10,9 @@ class agent:
 
     def __init__(self):
         
-        self.accuracy_value_actor = 0.0 
-
-        self.accuracy_value_critic = 0.0
-         
         self.factors_actor = None
 
         self.factors_critic = None
-
-        self.loss_value_actor = 0.0
-
-        self.loss_value_critic = 0.0
 
         self.is_train = None
 
@@ -32,16 +24,10 @@ class agent:
 
         self.name_list = None
 
-        self.num_rewards = 0
-
         self.optimizer = None
 
         self.pred = None
 
-        self.targets = None
-
-        self.total_reward = 0.0
-    
     def add_model(self):
         """This function calls the appropriate model builder"""
         
@@ -105,36 +91,6 @@ class agent:
         self.factors_critic[i, j, 11] = ['key']
 
         self.factors_critic[i, j, 12] = ['sd']
-
-    def custom_accuracy(self):
-        """This function recreates the tf categorical accuracy 
-        function. This is required as a workaround to bug #11749 for keras."""
-        
-        # If the maximum value (whos index is given by np.argmax) corresponds
-        # with the correct value for self.targets value will have a value of 1,
-        # otherwise, 0
-
-        value = self.targets[np.argmax(self.pred)]
-
-        if value > 0:
-
-            self.num_correct += 1
-
-        else:
-
-            self.num_wrong += 1
-
-
-        self.accuracy_value = (float(self.num_correct) / float((self.num_correct + self.num_wrong))) * 100.0
-        
-    def custom_loss(self):
-        """This function manages the custom loss for the RL agent"""
-
-        self.pred = self.model_actor(self.factors, training = self.is_train)
-
-        tensor_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
-
-        return(tensor_loss(self.targets, self.pred))
 
     def factorize(self, user_history):
         """This function converts a given user history to a factorized array
@@ -235,47 +191,17 @@ class agent:
 
         i += 1
 
-    def get_gradient(self):
+    def get_gradient(self, divergence):
         """This function computes and returns the gradients of the given 
         model"""
 
-        with tf.GradientTape() as tape:
+        actor_gradients = tf.GradientTape.gradient((1.0 - self.reward),
+                                        self.model_actor.trainable_variables)
 
-            loss_value = self.custom_loss()
+        critic_gradients = tf.GradientTape.gradient(divergence,
+                                        self.model_critic.trainable_variables)
 
-        return (loss_value, tape.gradient(loss_value, 
-                                self.model_actor.trainable_variables))
-
-    def get_name_list(self, data):
-        """This function converts item hashes to unique integer tags with a
-        corresponding decrpytion dictionary"""
-
-        self.name_list = [''] * len(data.track_id.unique())
-        
-        i = 0
-
-        for track in data.track_id.unique():
-
-            self.name_list[i] = track
-
-            i += 1
-
-    def get_targets(self, row):
-        """This function creates a one hot vector of the target track id"""
-
-        output = [0] * len(self.name_list)
-
-        i = 0
-
-        for track in self.name_list:
-            
-            if track == row['track_id']:
-
-                output[i] = 1
-
-            i += 1
-
-        return(output)
+        return (actor_gradients, critic_gradients)
 
     def predict(self, user_history):
         """This function manages the training of the model based on the provided
@@ -292,7 +218,7 @@ class agent:
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
         
-        gradients_actor, gradients_critic = self.get_gradient() 
+        gradients_actor, gradients_critic = self.get_gradient(divergence) 
 
         self.optimizer.apply_gradients(zip(gradients_actor, 
                                         self.model_actor.trainable_variables))
@@ -310,27 +236,29 @@ class agent:
 
         self.pred = self.model_actor(self.factors, training = self.is_train)
 
-    def ready_agent(self, data, model_path, train):
+    def ready_agent(self, data, actor_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
-
-        self.get_name_list(data)
 
         self.model_actor_name = model_path 
 
         self.is_train = train 
 
-        self.model_actor = tf.saved_model.load(model_path)
+        self.model_actor = tf.saved_model.load(actor_model_path)
 
         if self.model_actor is not None:
             
-            print("Model {} sucessuflly loaded.\n".format(model_path))
+            print("Actor Model {} sucessuflly loaded.\n".format(actor_model_path))
+
+        self.model_critic = tf.saved_model.load(critic_model_path)
+
+        if self.model_actor is not None:
+            
+            print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
 
     def wake_agent(self, data, name, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
-
-        self.get_name_list(data)
 
         self.model_name = name
 
