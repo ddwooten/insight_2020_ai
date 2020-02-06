@@ -45,7 +45,7 @@ class agent:
         self.model_agent.add(tf.keras.layers.LSTM(300, input_shape=(300, 15)))
 
         self.model_agent.add(tf.keras.layers.Dense(11, 
-                                             activation = 'relu'))
+                                             activation = 'softmax'))
         
         # Create the critic model
 
@@ -60,7 +60,7 @@ class agent:
                                              activation = 'relu'))
 
         self.model_critic.add(tf.keras.layers.Dense(1, 
-                                             activation = 'relu'))
+                                             activation = 'softmax'))
 
         # Don't forget an optimizer!
 
@@ -101,7 +101,7 @@ class agent:
 
         self.factors_critic[i, j, 10] = ['mode']
 
-        self.factors_critic[i, j, 11] = ['key']
+        self.factors_critic[i, j, 11] = ['k']
 
         self.factors_critic[i, j, 12] = ['sd']
 
@@ -188,9 +188,9 @@ class agent:
 
             self.factors_critic[i, j, 10] = row['mode']
 
-            self.factors_agent[i, j, 11] = row['key']
+            self.factors_agent[i, j, 11] = row['k']
 
-            self.factors_critic[i, j, 11] = row['key']
+            self.factors_critic[i, j, 11] = row['k']
 
             self.factors_agent[i, j, 12] = row['day_w']
 
