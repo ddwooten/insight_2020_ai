@@ -182,7 +182,7 @@ class agent:
 
             self.factors_agent[i, j, 12] = row['day_w']
 
-            self.factors_critic[i, j, 12] = row['std']
+            self.factors_critic[i, j, 12] = row['sd']
 
             self.factors_agent[i, j, 13] = row['day_m']
 
