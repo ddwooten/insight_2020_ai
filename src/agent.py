@@ -81,7 +81,7 @@ class agent:
 
         self.factors_critic[i, j, 0] = ['avg']
 
-        self.factors_citic[i, j, 1] = ['instrumentalness']
+        self.factors_critic[i, j, 1] = ['instrumentalness']
 
         self.factors_critic[i, j, 2] = ['liveness']
 
@@ -110,7 +110,7 @@ class agent:
         for input into a model by calling the appropriate factorization function
         for that model class"""
 
-        if self.model_actor_name == 'lstm':
+        if self.model_name == 'lstm':
 
             self.factorize_lstm(user_history)
 
@@ -120,9 +120,9 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 300, 15)
+        self.factors_agent = np.zeros((1, 300, 15))
 
-        self.factors_critic = np.zeros((1, 301, 13)
+        self.factors_critic = np.zeros((1, 301, 13))
 
         # This i here is to conform with tensorflow input expectations
 
@@ -150,7 +150,7 @@ class agent:
 
             self.factors_agent[i, j, 1] = row['instrumentalness']
 
-            self.factors_citic[i, j, 1] = row['instrumentalness']
+            self.factors_critic[i, j, 1] = row['instrumentalness']
 
             self.factors_agent[i, j, 2] = row['liveness']
 
@@ -261,7 +261,7 @@ class agent:
             
             print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
 
-    def wake_agent(self, data, name, train):
+    def wake_agent(self, name, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
 

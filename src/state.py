@@ -25,11 +25,11 @@ class state:
 
         # Key is neglected as it is categorical not an actual scale or measure
 
-        user_array = user.loc[,['instrumentalness', 'liveness', 'speechiness',
+        user_array = user.loc[['instrumentalness', 'liveness', 'speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
                                 'acousticness', 'energy', 'mode', 'key']]
 
-        selection_array = self.current_user_history.append(self.produce).loc[,['instrumentalness', 
+        selection_array = self.current_user_history.append(self.produce).loc[['instrumentalness', 
                                 'liveness','speechiness',
                                 'danceability', 'valence', 'loudness', 'tempo',
                                 'acousticness', 'energy', 'mode', 'key']]
