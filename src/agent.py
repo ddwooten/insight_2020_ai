@@ -37,12 +37,29 @@ class agent:
 
     def add_model_lstm(self):
         """This function buils a lstm model"""
+        
+        # Create the actor model
 
         self.model_actor = tf.keras.Sequential()
 
-        self.model_actor.add(tf.keras.layers.LSTM(20, input_shape=(300, 15)))
+        self.model_actor.add(tf.keras.layers.LSTM(300, input_shape=(300, 15)))
 
         self.model_actor.add(tf.keras.layers.Dense(11, 
+                                             activation = 'relu'))
+        
+        # Create the critic model
+
+        self.model_critic = tf.keras.Sequential()
+
+        self.model_critic.add(tf.keras.layers.LSTM(301, input_shape=(301, 13)))
+
+        self.model_critic.add(tf.keras.layers.Dense(150, 
+                                             activation = 'relu'))
+
+        self.model_critic.add(tf.keras.layers.Dense(15, 
+                                             activation = 'relu'))
+
+        self.model_critic.add(tf.keras.layers.Dense(1, 
                                              activation = 'relu'))
 
         # Don't forget an optimizer!
@@ -57,10 +74,6 @@ class agent:
         if self.current_user_history.shape[0] >= 300:
 
             j = 301
-
-            self.factors_critic = np.reshape(self.factors_critic,
-                                             (self.factors_critic.shape[0],
-                                             301, 13)) 
 
         else:
 
@@ -109,7 +122,7 @@ class agent:
 
         self.factors_agent = np.zeros((1, 300, 15)
 
-        self.factors_critic = np.zeros((1, 300, 13)
+        self.factors_critic = np.zeros((1, 301, 13)
 
         # This i here is to conform with tensorflow input expectations
 
