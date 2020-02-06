@@ -105,7 +105,7 @@ class environment:
 
         self.state.get_sample_input()
 
-        self.agent.querry(self.state.current_user_history)
+        self.agent.predict(self.state.current_user_history)
 
         self.state.produce(self.agent.pred, 0.1)
 

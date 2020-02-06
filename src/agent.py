@@ -228,14 +228,6 @@ class agent:
 
         self.loss_value_actor = 1.0 - self.reward
 
-    def querry(self, user_history):
-        """This function, given a user history, attempts to provide a suitable
-        recommendation"""
-
-        self.factorize(user_history)
-
-        self.pred = self.model_actor(self.factors, training = self.is_train)
-
     def ready_agent(self, data, actor_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
         function and a model"""
