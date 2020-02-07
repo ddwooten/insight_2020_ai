@@ -3,6 +3,7 @@
 
 import numpy as np
 import tensorflow as tf
+import math
 from sklearn import metrics as sk
 import pdb
 
@@ -204,11 +205,16 @@ class agent:
 
         i += 1
 
-    def get_gradient(self, divergence):
+    def get_gradient(self, divergence, prediction):
         """This function computes and returns the gradients of the given 
         model"""
 
-        agent_gradients = tf.GradientTape.gradient((1.0 - self.reward),
+        # take the reward to the power of the rating the user gave it 
+
+        agent_loss = 1.0 - math.pow(self.reward, 
+                                    (math.pow(prediction.rating.values[0]), -1))
+
+        agent_gradients = tf.GradientTape.gradient(agent_loss,
                                         self.model_agent.trainable_variables)
 
         critic_gradients = tf.GradientTape.gradient(divergence,
@@ -231,7 +237,8 @@ class agent:
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
         
-        gradients_agent, gradients_critic = self.get_gradient(divergence) 
+        gradients_agent, gradients_critic = self.get_gradient(divergence, 
+                                                              prediction) 
 
         self.optimizer.apply_gradients(zip(gradients_agent, 
                                         self.model_agent.trainable_variables))

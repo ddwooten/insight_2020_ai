@@ -54,7 +54,7 @@ class environment:
 
             self.agent.predict(self.state.current_user_history)
 
-            self.state.produce(self.agent.pred, 0.1)
+            self.state.produce(self.agent.pred.numpy(), 0.1)
 
             self.state.divergence()
 

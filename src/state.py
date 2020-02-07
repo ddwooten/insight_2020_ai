@@ -15,6 +15,8 @@ class state:
 
         self.product = None
 
+        self.repeat = 0
+
         self.val_set = None
 
     def divergence():
@@ -151,29 +153,48 @@ class state:
                 attr_low[i] = attr[0][i]
 
                 attr_high[i] = attr[0][i]
+        
+        try:
 
-        self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &\
-                                 (self.data.instrumentalness <= attr_high[0]) &\
-                                 (self.data.liveness >= attr_low[1]) &\
-                                 (self.data.liveness <= attr_high[1]) &\
-                                 (self.data.speechiness >= attr_low[2]) &\
-                                 (self.data.speechiness <= attr_high[2]) &\
-                                 (self.data.danceability >= attr_low[3]) &\
-                                 (self.data.danceability <= attr_high[3]) &\
-                                 (self.data.valence >= attr_low[4]) &\
-                                 (self.data.valence <= attr_high[4]) &\
-                                 (self.data.loudness >= attr_low[5]) &\
-                                 (self.data.loudness <= attr_high[5]) &\
-                                 (self.data.tempo >= attr_low[6]) &\
-                                 (self.data.tempo <= attr_high[6]) &\
-                                 (self.data.acousticness >= attr_low[7]) &\
-                                 (self.data.acousticness <= attr_high[7]) &\
-                                 (self.data.energy >= attr_low[8]) &\
-                                 (self.data.energy <= attr_high[8]) &\
-                                 (self.data.m >= attr_low[9]) &\
-                                 (self.data.m <= attr_high[9]) &\
-                                 (self.data.k >= attr_low[10]) &\
-                                 (self.data.k <= attr_high[10])].sample(1)
+            self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &\
+                                     (self.data.instrumentalness <= attr_high[0]) &\
+                                     (self.data.liveness >= attr_low[1]) &\
+                                     (self.data.liveness <= attr_high[1]) &\
+                                     (self.data.speechiness >= attr_low[2]) &\
+                                     (self.data.speechiness <= attr_high[2]) &\
+                                     (self.data.danceability >= attr_low[3]) &\
+                                     (self.data.danceability <= attr_high[3]) &\
+                                     (self.data.valence >= attr_low[4]) &\
+                                     (self.data.valence <= attr_high[4]) &\
+                                     (self.data.loudness >= attr_low[5]) &\
+                                     (self.data.loudness <= attr_high[5]) &\
+                                     (self.data.tempo >= attr_low[6]) &\
+                                     (self.data.tempo <= attr_high[6]) &\
+                                     (self.data.acousticness >= attr_low[7]) &\
+                                     (self.data.acousticness <= attr_high[7]) &\
+                                     (self.data.energy >= attr_low[8]) &\
+                                     (self.data.energy <= attr_high[8]) &\
+                                     (self.data.m >= attr_low[9]) &\
+                                     (self.data.m <= attr_high[9]) &\
+                                     (self.data.k >= attr_low[10]) &\
+                                     (self.data.k <= attr_high[10])].sample(1)
+
+        except ValueError:
+
+            # If the attrs are so bad that no songs can be found, select a
+            # random song
+        
+            self.product = self.data.sample(1)
+
+        pdb.set_trace()
+
+        if self.product.track_id.values in self.current_user_history.track_id.unique().values:
+
+            self.repeat = 1
+
+        else:
+
+            self.repeat = 0
 
     def report_record(self, loc):
         """This function prints the entry of data corresponding to the index

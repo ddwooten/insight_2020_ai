@@ -49,10 +49,6 @@ def main():
 
         env.run_sim()
 
-        results = env.results()
-
-        print("Accuracy:{}, Loss:{}".format(results[0], results[1]))
-
         print("Exiting program gracefully.\n\n")
 
     else:
