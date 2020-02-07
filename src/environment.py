@@ -58,7 +58,7 @@ class environment:
 
             self.state.divergence()
 
-            self.agent.propogate(self.state.divergence, self.state.product)
+            self.agent.propogate(self.state.loss, self.state.product)
 
             self.loss_agent.append(1.0 - self.agent.reward)
 

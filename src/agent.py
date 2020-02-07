@@ -203,7 +203,7 @@ class agent:
 
         self.history_len = j
 
-    def get_gradient(self, divergence, prediction):
+    def get_gradient(self, critic_loss, prediction):
         """This function computes and returns the gradients of the given 
         model"""
 
@@ -212,19 +212,21 @@ class agent:
 
         if prediction.rating.values[0] > 0:
 
-            agent_loss = 1.0 - math.pow(self.reward,0.5)
+            reward =  math.pow(self.reward,0.5)
 
         else:
 
-            agent_loss = 1.0 - self.reward
+            reward = self.reward
+
+        agent_loss = tf.keras.losses.MSE(1.0,reward)
 
         with tf.GradientTape() as tape:
 
             agent_gradients = tape.gradient(agent_loss,
-                                            self.model_agent.trainable_variables)
+                                           self.model_agent.trainable_variables)
 
-            critic_gradients = tape.gradient(divergence,
-                                            self.model_critic.trainable_variables)
+            critic_gradients = tape.gradient(critic_loss,
+                                          self.model_critic.trainable_variables)
 
         return (agent_gradients, critic_gradients)
 
@@ -236,14 +238,14 @@ class agent:
 
         self.pred = self.model_agent(self.factors_agent, training=self.is_train)
 
-    def propogate(self, divergence, prediction):
+    def propogate(self, critic_loss, prediction):
         """This function propogates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
         
-        gradients_agent, gradients_critic = self.get_gradient(divergence, 
+        gradients_agent, gradients_critic = self.get_gradient(critic_loss, 
                                                               prediction) 
 
         self.optimizer.apply_gradients(zip(gradients_agent, 

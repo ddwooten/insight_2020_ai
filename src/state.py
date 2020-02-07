@@ -2,6 +2,7 @@
 
 import pandas as pd
 import numpy as np
+import tensorflow as tf
 import random
 import math
 import pdb
@@ -13,6 +14,8 @@ class state:
         self.current_user_history = None
         
         self.data = data 
+
+        self.loss = None
 
         self.product = None
 
@@ -33,6 +36,8 @@ class state:
         self.current_user_history=self.current_user_history.append(self.product)
 
         selection_array = self.current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
+
+        loss = tf.keras.losses.KLDivergence()
         
         user_array = user_array.to_numpy()
 
@@ -42,15 +47,13 @@ class state:
 
         end = self.current_user_history.shape[0]
 
-        self.divergence = 1E18
-
         while end < user.shape[0]:
+            
+            if self.loss is not None:
 
-            divergence = -np.sum(np.multiply(user_array[start:end,:], np.log(np.divide(selection_array, user_array[start:end,:]))))
+                if loss(user_array[start:end,], selection_array) < self.loss:
 
-            if divergence < self.divergence:
-
-                self.divergence = divergence
+                    self.loss = loss(user_array[start:end,], selection_array)
 
             start = start + self.current_user_history.shape[0]
 
