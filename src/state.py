@@ -152,8 +152,6 @@ class state:
 
                 attr_high[i] = attr[0][i]
 
-        pdb.set_trace()
-
         self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &\
                                  (self.data.instrumentalness <= attr_high[0]) &\
                                  (self.data.liveness >= attr_low[1]) &\
