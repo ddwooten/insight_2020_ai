@@ -19,11 +19,11 @@ class state:
 
         self.val_set = None
 
-    def divergence():
+    def divergence(self):
         """This function computes the minimum kl divergence between a given
         sequence and the total user history"""
 
-        user = self.data[self.data.user_id==self.current_user_history.user_id]
+        user = self.data[self.data.user_id==self.current_user_history.user_id.values[0]]
 
         # Key is neglected as it is categorical not an actual scale or measure
 
@@ -186,8 +186,9 @@ class state:
         
             self.product = self.data.sample(1)
 
-        if self.product.track_id.values[0] in self.current_user_history.track_id.unique().values:
+        if self.product.track_id.values[0] in self.current_user_history.track_id.unique():
             pdb.set_trace()
+            
             self.repeat = 1
 
         else:
