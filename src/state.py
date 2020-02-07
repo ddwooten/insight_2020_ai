@@ -142,9 +142,9 @@ class state:
 
                 # attr is a two dimensional array (1,11) given by TF
 
-                attr_low[i] = attr[0][i] - (relax/2.0)
+                attr_low[i] = attr[0][i] * (1.0 - (relax/2.0))
 
-                attr_high[i] = attr[0][i] + (relax/2.0)
+                attr_high[i] = attr[0][i] * (1.0 + (relax/2.0))
 
             else:
 
