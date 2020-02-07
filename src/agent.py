@@ -209,10 +209,16 @@ class agent:
         """This function computes and returns the gradients of the given 
         model"""
 
-        # take the reward to the power of the rating the user gave it 
+        # if the track is something the user has heard before take the reward
+        # the (1/2)
 
-        agent_loss = 1.0 - math.pow(self.reward, 
-                                    (math.pow(prediction.rating.values[0]), -1))
+        if prediction.rating.values[0] > 0:
+
+            agent_loss = 1.0 - math.pow(self.reward,0.5)
+
+        else:
+
+            agent_loss = 1.0 - self.reward
 
         agent_gradients = tf.GradientTape.gradient(agent_loss,
                                         self.model_agent.trainable_variables)

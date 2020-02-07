@@ -186,10 +186,8 @@ class state:
         
             self.product = self.data.sample(1)
 
-        pdb.set_trace()
-
-        if self.product.track_id.values in self.current_user_history.track_id.unique().values:
-
+        if self.product.track_id.values[0] in self.current_user_history.track_id.unique().values:
+            pdb.set_trace()
             self.repeat = 1
 
         else:
