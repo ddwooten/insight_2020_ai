@@ -1,6 +1,7 @@
 # This file contains the state class and all of its associated functions
 
 import pandas as pd
+import numpy as np
 import random
 import math
 import pdb
@@ -27,14 +28,11 @@ class state:
 
         # Key is neglected as it is categorical not an actual scale or measure
 
-        user_array = user.loc[['instrumentalness', 'liveness', 'speechiness',
-                                'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'm', 'k']]
+        user_array = user[['instrumentalness', 'liveness', 'speechiness', 'danceability', 'valence', 'loudness', 'tempo', 'acousticness', 'energy', 'm', 'k']]
+        
+        self.current_user_history=self.current_user_history.append(self.product)
 
-        selection_array = self.current_user_history.append(self.produce).loc[['instrumentalness', 
-                                'liveness','speechiness',
-                                'danceability', 'valence', 'loudness', 'tempo',
-                                'acousticness', 'energy', 'm', 'k']]
+        selection_array = self.current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
         
         user_array = user_array.to_numpy()
 
@@ -42,7 +40,7 @@ class state:
 
         start = 0
 
-        end = self.current_user_history.shape[0] - 1
+        end = self.current_user_history.shape[0]
 
         self.divergence = 1E18
 

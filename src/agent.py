@@ -15,6 +15,8 @@ class agent:
 
         self.factors_critic = None
 
+        self.history_len = 0
+
         self.is_train = None
 
         self.model_agent = None
@@ -67,44 +69,38 @@ class agent:
 
         self.optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
    
-    def add_prediction(self, prediciton):
+    def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
         
         i = 0
 
-        if self.current_user_history.shape[0] >= 300:
+        j = self.history_len + 1
 
-            j = 301
+        self.factors_critic[i, j, 0] = prediction['avg']
 
-        else:
+        self.factors_critic[i, j, 1] = prediction['instrumentalness']
 
-            j = self.current_user_history.shape[0]
+        self.factors_critic[i, j, 2] = prediction['liveness']
 
-        self.factors_critic[i, j, 0] = ['avg']
+        self.factors_critic[i, j, 3] = prediction['speechiness']
 
-        self.factors_critic[i, j, 1] = ['instrumentalness']
+        self.factors_critic[i, j, 4] = prediction['danceability']
 
-        self.factors_critic[i, j, 2] = ['liveness']
+        self.factors_critic[i, j, 5] = prediction['valence']
 
-        self.factors_critic[i, j, 3] = ['speechiness']
+        self.factors_critic[i, j, 6] = prediction['loudness']
 
-        self.factors_critic[i, j, 4] = ['danceability']
+        self.factors_critic[i, j, 7] = prediction['tempo']
 
-        self.factors_critic[i, j, 5] = ['valence']
+        self.factors_critic[i, j, 8] = prediction['acousticness']
 
-        self.factors_critic[i, j, 6] = ['loudness']
+        self.factors_critic[i, j, 9] = prediction['energy']
 
-        self.factors_critic[i, j, 7] = ['tempo']
+        self.factors_critic[i, j, 10] = prediction['m']
 
-        self.factors_critic[i, j, 8] = ['acousticness']
+        self.factors_critic[i, j, 11] = prediction['k']
 
-        self.factors_critic[i, j, 9] = ['energy']
-
-        self.factors_critic[i, j, 10] = ['m']
-
-        self.factors_critic[i, j, 11] = ['k']
-
-        self.factors_critic[i, j, 12] = ['sd']
+        self.factors_critic[i, j, 12] = prediction['sd']
 
     def factorize(self, user_history):
         """This function converts a given user history to a factorized array
@@ -205,6 +201,8 @@ class agent:
 
         i += 1
 
+        self.history_len = j
+
     def get_gradient(self, divergence, prediction):
         """This function computes and returns the gradients of the given 
         model"""
@@ -220,11 +218,13 @@ class agent:
 
             agent_loss = 1.0 - self.reward
 
-        agent_gradients = tf.GradientTape.gradient(agent_loss,
-                                        self.model_agent.trainable_variables)
+        with tf.GradientTape() as tape:
 
-        critic_gradients = tf.GradientTape.gradient(divergence,
-                                        self.model_critic.trainable_variables)
+            agent_gradients = tape.gradient(agent_loss,
+                                            self.model_agent.trainable_variables)
+
+            critic_gradients = tape.gradient(divergence,
+                                            self.model_critic.trainable_variables)
 
         return (agent_gradients, critic_gradients)
 
