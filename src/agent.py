@@ -56,10 +56,10 @@ class agent:
 
         self.model_critic.add(tf.keras.layers.LSTM(101, input_shape=(101, 13)))
 
-        self.model_critic.add(tf.keras.layers.Dense(75, 
+        self.model_critic.add(tf.keras.layers.Dense(20, 
                                              activation = 'relu'))
 
-        self.model_critic.add(tf.keras.layers.Dense(15, 
+        self.model_critic.add(tf.keras.layers.Dense(4, 
                                              activation = 'relu'))
 
         self.model_critic.add(tf.keras.layers.Dense(1, 
@@ -203,7 +203,7 @@ class agent:
 
         self.history_len = j
 
-    def get_gradient(self, critic_loss, prediction):
+    def get_gradient(self, critic_loss, prediction, tape_c):
         """This function computes and returns the gradients of the given 
         model"""
 
@@ -218,18 +218,21 @@ class agent:
 
             reward = self.reward
 
+        # Due to the square in the operation the magnitue of rward is limited
+        # to 1E-7 due to machine precision concerns - verfied through testing
+
+        reward = 0.9999999 if reward > 0.9999999 else reward
+
+        pdb.set_trace()
+
+        tape_a = tf.GradientTape(persistent=True)
+
         agent_loss = tf.keras.losses.MSE([1.0],[reward])
 
-        with tf.GradientTape() as tape_a:
+        agent_gradients = tape_a.gradient(agent_loss,
+                                          self.model_agent.trainable_variables)
 
-            agent_gradients = tape_a.gradient(agent_loss,
-                                           self.model_agent.trainable_variables)
-
-        with tf.GradientTape() as tape_c:
-
-            pdb.set_trace()
-
-            critic_gradients = tape_c.gradient(critic_loss,
+        critic_gradients = tape_c.gradient(critic_loss,
                                           self.model_critic.trainable_variables)
 
         return (agent_gradients, critic_gradients)
@@ -242,21 +245,21 @@ class agent:
 
         self.pred = self.model_agent(self.factors_agent, training=self.is_train)
 
-    def propogate(self, critic_loss, prediction):
+    def propogate(self, critic_loss, prediction, tape_c):
         """This function propogates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
-        
         gradients_agent, gradients_critic = self.get_gradient(critic_loss, 
-                                                              prediction) 
+                                                              prediction,
+                                                              tape_c) 
 
         self.optimizer.apply_gradients(zip(gradients_agent, 
                                         self.model_agent.trainable_variables))
 
         self.optimizer.apply_gradients(zip(gradients_critic, 
-                                        self.model_agent.trainable_variables))
+                                        self.model_critic.trainable_variables))
 
     def ready_agent(self, data, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss

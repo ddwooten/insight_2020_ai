@@ -21,6 +21,8 @@ class state:
 
         self.repeat = 0
 
+        self.tape_c = None
+
         self.val_set = None
 
     def divergence(self):
@@ -38,7 +40,9 @@ class state:
         selection_array = self.current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
 
         loss = tf.keras.losses.KLDivergence()
-        
+
+        self.tape_c = tf.GradientTape(persistent=True)
+
         user_array = user_array.to_numpy()
 
         selection_array = selection_array.to_numpy()
@@ -47,13 +51,15 @@ class state:
 
         end = self.current_user_history.shape[0]
 
-        while end < user.shape[0]:
+        while end <= user_array.shape[0]:
             
             if self.loss is not None:
 
-                if loss(user_array[start:end,], selection_array) < self.loss:
+                if loss(user_array[start:end,], selection_array) is not None:
+                    
+                    if loss(user_array[start:end,], selection_array)<self.loss:
 
-                    self.loss = loss(user_array[start:end,], selection_array)
+                        self.loss=loss(user_array[start:end,], selection_array)
 
             else:
 

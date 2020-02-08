@@ -62,7 +62,8 @@ class environment:
 
                 pdb.set_trace()
 
-            self.agent.propogate(self.state.loss, self.state.product)
+            self.agent.propogate(self.state.loss, self.state.product,
+                                 self.state.tape_c)
 
             self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
