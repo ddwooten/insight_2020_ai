@@ -15,62 +15,10 @@ class state:
         
         self.data = data 
 
-        self.loss = None
-
         self.product = None
-
-        self.repeat = 0
-
-        self.tape_c = None
 
         self.val_set = None
 
-    def divergence(self):
-        """This function computes the minimum kl divergence between a given
-        sequence and the total user history"""
-
-        user = self.data[self.data.user_id==self.current_user_history.user_id.values[0]]
-
-        # Key is neglected as it is categorical not an actual scale or measure
-
-        user_array = user[['instrumentalness', 'liveness', 'speechiness', 'danceability', 'valence', 'loudness', 'tempo', 'acousticness', 'energy', 'm', 'k']]
-        
-        self.current_user_history=self.current_user_history.append(self.product)
-
-        selection_array = self.current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
-
-        loss = tf.keras.losses.KLDivergence()
-
-        self.tape_c = tf.GradientTape(persistent=True)
-
-        user_array = user_array.to_numpy()
-
-        selection_array = selection_array.to_numpy()
-
-        start = 0
-
-        end = self.current_user_history.shape[0]
-
-        while end <= user_array.shape[0]:
-            
-            if self.loss is not None:
-
-                if loss(user_array[start:end,], selection_array) is not None:
-                    
-                    if loss(user_array[start:end,], selection_array)<self.loss:
-
-                        self.loss=loss(user_array[start:end,], selection_array)
-
-            else:
-
-                self.loss = loss(user_array[start:end,], selection_array)
-
-            start += 1
-
-            end += 1
-        if self.loss is None:
-            pdb.set_trace()
-            
     def get_random_user_history(self):
         """This function pull a random user history of random length"""
 
@@ -207,6 +155,8 @@ class state:
         else:
 
             self.repeat = 0
+
+        self.current_user_history.append(self.product)
 
     def report_record(self, loc):
         """This function prints the entry of data corresponding to the index

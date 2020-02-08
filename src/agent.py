@@ -203,7 +203,7 @@ class agent:
 
         self.history_len = j
 
-    def get_gradient(self, critic_loss, prediction, tape_c):
+    def get_gradient(self, data, current_user_history, prediction):
         """This function computes and returns the gradients of the given 
         model"""
 
@@ -225,17 +225,59 @@ class agent:
 
         pdb.set_trace()
 
-        tape_a = tf.GradientTape(persistent=True)
+        user = data[data.user_id == current_user_history.user_id.values[0]]
 
-        agent_loss = tf.keras.losses.MSE([1.0],[reward])
+        user_array = user[['instrumentalness', 'liveness', 'speechiness', 'danceability', 'valence', 'loudness', 'tempo', 'acousticness', 'energy', 'm', 'k']]
+        
+        selection_array = current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
+        
+        with tf.GradientTape() as tape_a, tf.GradientTape() as tape_c:
 
-        agent_gradients = tape_a.gradient(agent_loss,
-                                          self.model_agent.trainable_variables)
+            loss = tf.keras.losses.KLDivergence()
 
-        critic_gradients = tape_c.gradient(critic_loss,
+            critic_loss = None
+
+            user_array = user_array.to_numpy()
+
+            selection_array = selection_array.to_numpy()
+
+            start = 0
+
+            end = current_user_history.shape[0]
+
+            while end <= user_array.shape[0]:
+                
+                if critic_loss is not None:
+
+                    if loss(user_array[start:end,],selection_array) is not None:
+                        
+                        if loss(user_array[start:end,],selection_array)<critic_loss:
+
+                            critic_loss=loss(user_array[start:end,], selection_array)
+
+                else:
+
+                    critic_loss = loss(user_array[start:end,], selection_array)
+
+                start += 1
+
+                end += 1
+
+            pdb.set_trace()
+
+            agent_loss = tf.constant(1.0)
+
+            tape_a.watch(agent_loss)
+
+            agent_loss = tf.keras.losses.MSE([1.0],[reward])
+
+            agent_gradients=tape_a.gradient(agent_loss,
+                                           self.model_agent.trainable_variables)
+
+            critic_gradients = tape_c.gradient(critic_loss,
                                           self.model_critic.trainable_variables)
 
-        return (agent_gradients, critic_gradients)
+            return (agent_gradients, critic_gradients)
 
     def predict(self, user_history):
         """This function manages the training of the model based on the provided
@@ -245,15 +287,15 @@ class agent:
 
         self.pred = self.model_agent(self.factors_agent, training=self.is_train)
 
-    def propogate(self, critic_loss, prediction, tape_c):
+    def propogate(self, data, current_user_history, prediction):
         """This function propogates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
 
         self.reward = self.model_critic(self.factors_critic, training=self.is_train)
-        gradients_agent, gradients_critic = self.get_gradient(critic_loss, 
-                                                              prediction,
-                                                              tape_c) 
+        gradients_agent, gradients_critic = self.get_gradient(data,
+                                                           current_user_history,
+                                                              prediction)
 
         self.optimizer.apply_gradients(zip(gradients_agent, 
                                         self.model_agent.trainable_variables))

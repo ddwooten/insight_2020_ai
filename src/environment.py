@@ -56,14 +56,9 @@ class environment:
 
             self.state.produce(self.agent.pred.numpy(), 0.1)
 
-            self.state.divergence()
-
-            if self.state.loss is None:
-
-                pdb.set_trace()
-
-            self.agent.propogate(self.state.loss, self.state.product,
-                                 self.state.tape_c)
+            self.agent.propogate(self.state.data,
+                                 self.state.current_user_history, 
+                                 self.state.product)
 
             self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
