@@ -54,7 +54,7 @@ class environment:
 
             self.agent.predict(self.state.current_user_history)
 
-            self.state.produce(self.agent.pred.numpy(), 0.1)
+            self.state.produce(self.agent.pred, 0.1)
 
             self.agent.propogate(self.state.data,
                                  self.state.current_user_history, 
@@ -62,7 +62,7 @@ class environment:
 
             self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
-            self.loss_critic.append(self.state.divergence)
+            self.loss_critic.append(self.agent.critic_loss)
 
             print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward),
                                                         self.state.divergence))
@@ -95,8 +95,7 @@ class environment:
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
 
-        self.agent.ready_agent(self.state.data,
-                                self.setup_dict['model_path'], 
+        self.agent.ready_agent( self.setup_dict['model_path'], 
                                 self.setup_dict['train'])
 
         self.state.get_sample_input()
