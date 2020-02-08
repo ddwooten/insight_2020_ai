@@ -2,7 +2,7 @@
 # This 'agent' is a reinforcement learning agent.
 
 import numpy as np
-import tensorflow as tf
+import pytorch as torch
 import math
 from sklearn import metrics as sk
 import pdb
@@ -19,9 +19,9 @@ class agent:
 
         self.is_train = None
 
-        self.model_agent = None
+        self.model_agent = []
 
-        self.model_critic = None
+        self.model_critic = []
 
         self.model_name = None
 
@@ -43,9 +43,13 @@ class agent:
         
         # Create the agent model
 
-        self.model_agent = tf.keras.Sequential()
-
-        self.model_agent.add(tf.keras.layers.LSTM(100, input_shape=(100, 15)))
+        self.model_agent = torch.nn.LSTM(input_sizez = 15,
+                                         hidden_size = 100,
+                                         num_layers = 1,
+                                         bias = True,
+                                         batch_first = True,
+                                         dropout = 0.1,
+                                         bidirectional = False)
 
         self.model_agent.add(tf.keras.layers.Dense(11, 
                                              activation = 'softmax'))
@@ -311,13 +315,13 @@ class agent:
 
         self.is_train = train 
 
-        self.model_agent = tf.saved_model.load(agent_model_path)
+        self.model_agent = troch.load(agent_model_path)
 
         if self.model_agent is not None:
             
             print("Actor Model {} sucessuflly loaded.\n".format(agent_model_path))
 
-        self.model_critic = tf.saved_model.load(critic_model_path)
+        self.model_critic = torch.load(critic_model_path)
 
         if self.model_agent is not None:
             

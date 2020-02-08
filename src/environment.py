@@ -1,7 +1,7 @@
 # This file contains the evironment class and all of its methods
 
 import pdb
-import tensorflow as tf
+import pytorch as torch
 import numpy as np
 from datetime import datetime
 
@@ -72,19 +72,19 @@ class environment:
 
                 model_name = 'agent_model_{}'.format(datetime.now())
 
-                tf.saved_model.save(self.agent.model_agent, '../models/' + model_name)
+                troch.save(self.agent.model_agent, '../models/' + model_name)
 
                 model_name = 'critic_model_{}'.format(datetime.now())
 
-                tf.saved_model.save(self.agent.model_critic, '../models/' + model_name)
+                torch.save(self.agent.model_critic, '../models/' + model_name)
         
         model_name = 'end_agent_model_{}'.format(datetime.now())
 
-        tf.saved_model.save(self.agent.model_agent, '../models/' + model_name)
+        torch.save(self.agent.model_agent, '../models/' + model_name)
 
         model_name = 'end_critic_model_{}'.format(datetime.now())
 
-        tf.saved_model.save(self.agent.model_critic, '../models/' + model_name)
+        torch.save(self.agent.model_critic, '../models/' + model_name)
 
         # Save the loss arrays as csvs
 

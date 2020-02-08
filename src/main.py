@@ -3,9 +3,6 @@
 # main.py
 
 import pandas as pd
-import numpy as np
-import tensorflow as tf
-import re as re 
 from agent import agent
 from environment import environment
 from state import state
