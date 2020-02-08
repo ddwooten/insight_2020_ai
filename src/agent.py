@@ -45,7 +45,7 @@ class agent:
 
         self.model_agent = tf.keras.Sequential()
 
-        self.model_agent.add(tf.keras.layers.LSTM(300, input_shape=(300, 15)))
+        self.model_agent.add(tf.keras.layers.LSTM(100, input_shape=(100, 15)))
 
         self.model_agent.add(tf.keras.layers.Dense(11, 
                                              activation = 'softmax'))
@@ -54,9 +54,9 @@ class agent:
 
         self.model_critic = tf.keras.Sequential()
 
-        self.model_critic.add(tf.keras.layers.LSTM(301, input_shape=(301, 13)))
+        self.model_critic.add(tf.keras.layers.LSTM(101, input_shape=(101, 13)))
 
-        self.model_critic.add(tf.keras.layers.Dense(150, 
+        self.model_critic.add(tf.keras.layers.Dense(75, 
                                              activation = 'relu'))
 
         self.model_critic.add(tf.keras.layers.Dense(15, 
@@ -74,7 +74,7 @@ class agent:
         
         i = 0
 
-        j = self.history_len + 1
+        j = self.history_len
 
         self.factors_critic[i, j, 0] = prediction['avg']
 
@@ -117,9 +117,9 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 300, 15))
+        self.factors_agent = np.zeros((1, 100, 15))
 
-        self.factors_critic = np.zeros((1, 301, 13))
+        self.factors_critic = np.zeros((1, 101, 13))
 
         # This i here is to conform with tensorflow input expectations
 
@@ -137,7 +137,7 @@ class agent:
             
             # Truncating maximum history to ~1 day of continuous listening
 
-            if j == 300:
+            if j == 100:
 
                 break
 
@@ -218,14 +218,18 @@ class agent:
 
             reward = self.reward
 
-        agent_loss = tf.keras.losses.MSE(1.0,reward)
+        agent_loss = tf.keras.losses.MSE([1.0],[reward])
 
-        with tf.GradientTape() as tape:
+        with tf.GradientTape() as tape_a:
 
-            agent_gradients = tape.gradient(agent_loss,
+            agent_gradients = tape_a.gradient(agent_loss,
                                            self.model_agent.trainable_variables)
 
-            critic_gradients = tape.gradient(critic_loss,
+        with tf.GradientTape() as tape_c:
+
+            pdb.set_trace()
+
+            critic_gradients = tape_c.gradient(critic_loss,
                                           self.model_critic.trainable_variables)
 
         return (agent_gradients, critic_gradients)

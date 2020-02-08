@@ -55,10 +55,16 @@ class state:
 
                     self.loss = loss(user_array[start:end,], selection_array)
 
-            start = start + self.current_user_history.shape[0]
+            else:
 
-            end = end + self.current_user_history.shape[0]
+                self.loss = loss(user_array[start:end,], selection_array)
 
+            start += 1
+
+            end += 1
+        if self.loss is None:
+            pdb.set_trace()
+            
     def get_random_user_history(self):
         """This function pull a random user history of random length"""
 

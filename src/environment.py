@@ -58,9 +58,13 @@ class environment:
 
             self.state.divergence()
 
+            if self.state.loss is None:
+
+                pdb.set_trace()
+
             self.agent.propogate(self.state.loss, self.state.product)
 
-            self.loss_agent.append(1.0 - self.agent.reward)
+            self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
             self.loss_critic.append(self.state.divergence)
 
