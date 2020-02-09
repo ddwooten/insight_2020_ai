@@ -88,15 +88,23 @@ class state:
 
         self.current_user_history = pd.read_pickle('../data/predict.pk')
 
-    def produce(self, attr, relax):
+    def produce(self, attributes, relax):
         """This function selects a song from data based on its match to spotify
         dimentions"""
 
         index = random.randint(0, 11)
 
-        attr_low = [0] * 11
+        # Slice off the tensor dimensions from torch, get the values
 
-        attr_high = [0] * 11
+        attr = [0] * 11
+
+        for i in range(11):
+
+            attr[i] = attributes[0][0][i].item()
+
+        attrlow = [0] * 11
+
+        attrhigh = [0] * 11
 
         for i in range(11):
 
@@ -104,40 +112,40 @@ class state:
 
                 # attr is a two dimensional array (1,11) given by TF
 
-                attr_low[i] = attr[0][i] * (1.0 - (relax/2.0))
+                attrlow[i] = attr[i] * (1.0 - (relax/2.0))
 
-                attr_high[i] = attr[0][i] * (1.0 + (relax/2.0))
+                attrhigh[i] = attr[i] * (1.0 + (relax/2.0))
 
             else:
 
-                attr_low[i] = attr[0][i]
+                attrlow[i] = attr[i]
 
-                attr_high[i] = attr[0][i]
+                attrhigh[i] = attr[i]
         
         try:
 
-            self.product = self.data[(self.data.instrumentalness >= attr_low[0]) &\
-                                     (self.data.instrumentalness <= attr_high[0]) &\
-                                     (self.data.liveness >= attr_low[1]) &\
-                                     (self.data.liveness <= attr_high[1]) &\
-                                     (self.data.speechiness >= attr_low[2]) &\
-                                     (self.data.speechiness <= attr_high[2]) &\
-                                     (self.data.danceability >= attr_low[3]) &\
-                                     (self.data.danceability <= attr_high[3]) &\
-                                     (self.data.valence >= attr_low[4]) &\
-                                     (self.data.valence <= attr_high[4]) &\
-                                     (self.data.loudness >= attr_low[5]) &\
-                                     (self.data.loudness <= attr_high[5]) &\
-                                     (self.data.tempo >= attr_low[6]) &\
-                                     (self.data.tempo <= attr_high[6]) &\
-                                     (self.data.acousticness >= attr_low[7]) &\
-                                     (self.data.acousticness <= attr_high[7]) &\
-                                     (self.data.energy >= attr_low[8]) &\
-                                     (self.data.energy <= attr_high[8]) &\
-                                     (self.data.m >= attr_low[9]) &\
-                                     (self.data.m <= attr_high[9]) &\
-                                     (self.data.k >= attr_low[10]) &\
-                                     (self.data.k <= attr_high[10])].sample(1)
+            self.product = self.data[(self.data.instrumentalness >= attrlow[0]) &\
+                                     (self.data.instrumentalness <= attrhigh[0]) &\
+                                     (self.data.liveness >= attrlow[1]) &\
+                                     (self.data.liveness <= attrhigh[1]) &\
+                                     (self.data.speechiness >= attrlow[2]) &\
+                                     (self.data.speechiness <= attrhigh[2]) &\
+                                     (self.data.danceability >= attrlow[3]) &\
+                                     (self.data.danceability <= attrhigh[3]) &\
+                                     (self.data.valence >= attrlow[4]) &\
+                                     (self.data.valence <= attrhigh[4]) &\
+                                     (self.data.loudness >= attrlow[5]) &\
+                                     (self.data.loudness <= attrhigh[5]) &\
+                                     (self.data.tempo >= attrlow[6]) &\
+                                     (self.data.tempo <= attrhigh[6]) &\
+                                     (self.data.acousticness >= attrlow[7]) &\
+                                     (self.data.acousticness <= attrhigh[7]) &\
+                                     (self.data.energy >= attrlow[8]) &\
+                                     (self.data.energy <= attrhigh[8]) &\
+                                     (self.data.m >= attrlow[9]) &\
+                                     (self.data.m <= attrhigh[9]) &\
+                                     (self.data.k >= attrlow[10]) &\
+                                     (self.data.k <= attrhigh[10])].sample(1)
 
         except ValueError:
 
@@ -147,8 +155,6 @@ class state:
             self.product = self.data.sample(1)
 
         if self.product.track_id.values[0] in self.current_user_history.track_id.unique():
-            pdb.set_trace()
-            
             self.repeat = 1
 
         else:

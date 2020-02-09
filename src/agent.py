@@ -45,6 +45,10 @@ class agent:
 
         self.model_critic = CriticModel(13, 101, 10, 5)
 
+        self.set_model_weights(self.model_agent)
+
+        self.set_model_weights(self.model_critic)
+
         self.optimizer_agent = torch.optim.SGD(self.model_agent.parameters(),
                                                lr = 0.1)
 
@@ -216,8 +220,6 @@ class agent:
 
         selection_array = selection_array.to_numpy()
 
-        selection_array = np.log10(selection_array) * np.array([-1.0])
-
         selection_array = selection_array[-10:]
 
         start = 0
@@ -245,7 +247,7 @@ class agent:
 
         self.model_agent.zero_grad()
 
-        self.pred = self.model_agent(self.factors_agent)
+        self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
     def propogate(self, data, current_user_history, prediction):
         """This function propogates the loss through the actor and critic"""
@@ -254,7 +256,9 @@ class agent:
 
         self.model_critic.zero_grad()
 
-        self.reward = self.model_critic(self.factors_critic)
+        pdb.set_trace()
+
+        self.reward = self.model_critic(torch.Tensor(self.factors_critic))
 
         self.get_agent_reward()
         
@@ -289,6 +293,20 @@ class agent:
         if self.model_agent is not None:
             
             print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
+    def set_model_weights(self, model):
+        """This function initilizes the weights in pytorch model"""
+
+        classname = model.__class__.__name__
+
+        if classname.find('Linear') != -1:
+
+            n = model.in_features
+
+            y = 1.0 / np.sqrt(n)
+
+            model.weight.data.uniform_(-y,y)
+
+            model.bias.data.fill(0)
 
     def wake_agent(self, train):
         """This function sets up a working agent - one complete with a loss

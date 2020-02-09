@@ -2,6 +2,8 @@
 # Credit to the PyTorch team and the excellent tutorial found at pytorch.org
 
 import torch
+import numpy as np
+import pdb
 
 class AgentModel(torch.nn.Module):
 
@@ -27,12 +29,17 @@ class AgentModel(torch.nn.Module):
 
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
+        pdb.set_trace()
 
-        lstm_out, _ = self.lstm(batch)
+        lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
 
-        dense_out = self.dense(lstm_out.view(self.lstm_len, -1))
+        lstm_out = lstm_out.squeeze()[-1,:]
 
-        embeddings_out = torch.nn.functional.log_softmax(dense_out, dim=1)
+        lstm_out = torch.nn.functional.relu(lstm_out)
+
+        dense_out = self.dense(lstm_out)
+
+        embeddings_out = torch.nn.functional.log_softmax(dense_out)
 
         return(embeddings_out)
 
@@ -67,14 +74,24 @@ class CriticModel(torch.nn.Module):
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
 
-        lstm_out, _ = self.lstm(batch)
+        pdb.set_trace()
 
-        dense_1_out = self.dense_1(lstm_out.view(self.lstm_len, -1))
+        lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
 
-        dense_2_out = self.dense_2(dense_1_out.view(self.dense_1_len, -1))
+        lstm_out = lstm_out.squeeze()[-1,:]
+        
+        lstm_out = torch.nn.functional.relu(lstm_out)
 
-        dense_3_out = self.dense_3(dense_2_out.view(self.dense_0_len, -1))
+        dense_1_out = self.dense_1(lstm_out)
 
-        reward_out = torch.nn.functional.log_softmax(dense_out, dim=1)
+        torch.nn.functional.relu(dense_1_out)
+
+        dense_2_out = self.dense_2(dense_1_out)
+
+        torch.nn.functional.relu(dense_2_out)
+
+        dense_3_out = self.dense_3(dense_2_out)
+
+        reward_out = torch.nn.functional.log_softmax(dense_3_out)
 
         return(reward_out)

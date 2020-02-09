@@ -46,7 +46,7 @@ class environment:
 
         self.critic_loss = []
 
-        self.agent.wake_agent(self.setup_dict['model'],self.setup_dict['train'])
+        self.agent.wake_agent(self.setup_dict['train'])
 
         for epoch in range(self.setup_dict['epochs']):
 
