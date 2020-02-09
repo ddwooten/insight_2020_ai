@@ -43,7 +43,7 @@ class agent:
         
         self.model_agent = AgentModel(15, 100, 11)
 
-        self.model_critic = CriticModel(13, 100, 10, 5)
+        self.model_critic = CriticModel(13, 101, 10, 5)
 
         self.optimizer_agent = torch.optim.SGD(self.model_agent.parameters(),
                                                lr = 0.1)
@@ -217,6 +217,8 @@ class agent:
         selection_array = selection_array.to_numpy()
 
         selection_array = np.log10(selection_array) * np.array([-1.0])
+
+        selection_array = selection_array[-10:]
 
         start = 0
 
