@@ -100,7 +100,7 @@ class state:
 
         for i in range(11):
 
-            attr[i] = attributes[0][0][i].item()
+            attr[i] = attributes[i].item()
 
         attrlow = [0] * 11
 

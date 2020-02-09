@@ -2,6 +2,7 @@
 
 import pdb
 import torch 
+import math
 import numpy as np
 from datetime import datetime
 
@@ -11,9 +12,9 @@ class environment:
 
         self.agent = agent
 
-        self.loss_agent = None
+        self.loss_agent = [] 
 
-        self.loss_critic = None
+        self.loss_critic = []
 
         self.predictions = []
 
@@ -58,21 +59,22 @@ class environment:
 
             self.agent.propogate(self.state.data,
                                  self.state.current_user_history, 
-                                 self.state.product)
+                                 self.state.product,
+                                 self.state.repeat)
 
             self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
             self.loss_critic.append(self.agent.critic_loss)
 
-            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward),
-                                                        self.state.divergence))
+            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()),
+                                                self.agent.critic_loss.item()))
             if np.mod(100, epoch) == 0: 
 
                 # Save the model now that it has been trained
 
                 model_name = 'agent_model_{}'.format(datetime.now())
 
-                troch.save(self.agent.model_agent, '../models/' + model_name)
+                torch.save(self.agent.model_agent, '../models/' + model_name)
 
                 model_name = 'critic_model_{}'.format(datetime.now())
 

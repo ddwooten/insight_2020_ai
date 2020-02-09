@@ -29,7 +29,6 @@ class AgentModel(torch.nn.Module):
 
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
-        pdb.set_trace()
 
         lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
 
@@ -73,8 +72,6 @@ class CriticModel(torch.nn.Module):
 
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
-
-        pdb.set_trace()
 
         lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
 

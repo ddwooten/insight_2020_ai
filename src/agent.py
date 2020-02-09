@@ -184,13 +184,13 @@ class agent:
 
         self.history_len = j
 
-    def get_agent_reward(self, prediction):
+    def get_agent_reward(self, repeat):
         """This function gets the agent reward""" 
 
         # if the track is something the user has heard before take the reward
         # the (1/2)
 
-        if prediction.rating.values[0] > 0:
+        if repeat > 0:
 
             reward =  math.pow(self.reward,0.5)
 
@@ -205,7 +205,7 @@ class agent:
 
         self.reward = reward
 
-    def get_critic_loss(self, data, current_user_history, prediction):
+    def get_critic_loss(self, data, current_user_history):
         """This function get the critic loss"""
 
         user = data[data.user_id == current_user_history.user_id.values[0]]
@@ -214,7 +214,7 @@ class agent:
         
         selection_array = current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
         
-        loss = 1E14
+        critic_loss = 1E14
 
         user_array = user_array.to_numpy()
 
@@ -222,18 +222,26 @@ class agent:
 
         selection_array = selection_array[-10:]
 
+        # Convert to tensors for torch
+
+        user_array = torch.tensor(user_array)
+
+        selection_array = torch.tensor(selection_array, requires_grad = True)
+
         start = 0
 
-        end = current_user_history.shape[0]
+        end = selection_array.shape[0]
 
         while end <= user_array.shape[0]:
-            
+
             if self.loss_critic(selection_array, user_array[start:end,])<critic_loss:
-                critic_loss=self.loss(selection_array, user_array[start:end,])
+                critic_loss=self.loss_critic(selection_array, user_array[start:end,])
 
             start += 1
 
             end += 1
+
+        critic_loss = torch.tensor([critic_loss], requires_grad = True)
 
         self.critic_loss = critic_loss
 
@@ -249,20 +257,21 @@ class agent:
 
         self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
-    def propogate(self, data, current_user_history, prediction):
+    def propogate(self, data, current_user_history, prediction, repeat):
         """This function propogates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
 
         self.model_critic.zero_grad()
 
-        pdb.set_trace()
-
         self.reward = self.model_critic(torch.Tensor(self.factors_critic))
 
-        self.get_agent_reward()
+        self.get_agent_reward(repeat)
         
-        agent_loss = self.loss_agent(self.reward, 1.0)
+        agent_loss = self.loss_agent(torch.tensor([self.reward],
+                                                  requires_grad = True),
+                                     torch.tensor([1.0],
+                                                  requires_grad = True))
 
         agent_loss.backward()
 
@@ -280,7 +289,7 @@ class agent:
 
         self.is_train = train 
 
-        self.model_agent = troch.load(agent_model_path)
+        self.model_agent = torch.load(agent_model_path)
 
         self.model_critic = torch.load(critic_model_path)
 
