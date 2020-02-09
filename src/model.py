@@ -1,7 +1,7 @@
 # This file builds the model class as requested by PyTorch
 # Credit to the PyTorch team and the excellent tutorial found at pytorch.org
 
-import pytorch as torch
+import torch
 
 class AgentModel(torch.nn.Module):
 

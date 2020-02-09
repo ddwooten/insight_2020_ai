@@ -1,7 +1,7 @@
 # This file contains the evironment class and all of its methods
 
 import pdb
-import pytorch as torch
+import torch 
 import numpy as np
 from datetime import datetime
 

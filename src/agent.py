@@ -2,7 +2,7 @@
 # This 'agent' is a reinforcement learning agent.
 
 import numpy as np
-import pytorch as torch
+import torch
 import math
 from sklearn import metrics as sk
 import pdb
