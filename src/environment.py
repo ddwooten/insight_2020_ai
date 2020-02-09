@@ -55,7 +55,7 @@ class environment:
 
             self.agent.predict(self.state.current_user_history)
 
-            self.state.produce(self.agent.pred, 0.1)
+            self.state.produce(self.agent.pred, 0.01)
 
             self.agent.propogate(self.state.data,
                                  self.state.current_user_history, 

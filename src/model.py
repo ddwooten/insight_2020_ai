@@ -65,10 +65,16 @@ class CriticModel(torch.nn.Module):
                                   bidirectional = False)
 
         self.dense_1 = torch.nn.Linear(lstm_len, dense_1_len)
+        
+        if self.dense_2_len > 0:
 
-        self.dense_2 = torch.nn.Linear(dense_1_len, dense_2_len)
+            self.dense_2 = torch.nn.Linear(dense_1_len, dense_2_len)
 
-        self.dense_3 = torch.nn.Linear(dense_2_len, 1)
+            self.dense_3 = torch.nn.Linear(dense_2_len, 1)
+
+        else:
+
+            self.dense_3 = torch.nn.Linear(dense_1_len, 1)
 
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
@@ -95,6 +101,6 @@ class CriticModel(torch.nn.Module):
 
         dense_3_out = self.dense_3(dense_2_out)
 
-        reward_out = torch.nn.functional.logsigmoid(dense_3_out)
+        reward_out = torch.nn.functional.sigmoid(dense_3_out)
 
         return(reward_out)

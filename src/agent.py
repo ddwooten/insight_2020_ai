@@ -41,21 +41,21 @@ class agent:
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel(15, 100, 11)
+        self.model_agent = AgentModel(15, 20, 11)
 
-        self.model_critic = CriticModel(13, 101, 10, 5)
+        self.model_critic = CriticModel(13, 21, 10, 0)
 
         self.set_model_weights(self.model_agent)
 
         self.set_model_weights(self.model_critic)
 
-        self.optimizer_agent = torch.optim.SGD(self.model_agent.parameters(),
-                                               lr = 0.1)
+        self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
+                                               lr = 0.001)
 
-        self.optimizer_critic = torch.optim.SGD(self.model_critic.parameters(),
-                                               lr = 0.1)
+        self.optimizer_critic = torch.optim.Adam(self.model_critic.parameters(),
+                                               lr = 0.001)
 
-        self.loss_agent = torch.nn.L1Loss()
+        self.loss_agent = torch.nn.MSELoss()
 
         self.loss_critic = torch.nn.KLDivLoss()
 
@@ -98,9 +98,9 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 100, 15))
+        self.factors_agent = np.zeros((1, 20, 15))
 
-        self.factors_critic = np.zeros((1, 101, 13))
+        self.factors_critic = np.zeros((1, 21, 13))
 
         # This i here is to conform with tensorflow input expectations
 
@@ -118,7 +118,7 @@ class agent:
             
             # Truncating maximum history to ~1 day of continuous listening
 
-            if j == 100:
+            if j == 20:
 
                 break
 
@@ -255,8 +255,6 @@ class agent:
 
         self.factorize(user_history)
 
-        self.model_agent.zero_grad()
-
         self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
     def propogate(self, data, current_user_history, prediction, repeat):
@@ -264,26 +262,24 @@ class agent:
 
         self.add_prediction(prediction)
 
+        self.model_agent.zero_grad()
+
         self.model_critic.zero_grad()
 
         self.reward = self.model_critic(torch.Tensor(self.factors_critic))
 
         self.get_agent_reward(repeat)
         
-        agent_loss = self.loss_agent(torch.tensor([self.reward],
+        agent_loss = self.loss_agent(torch.tensor([1.0],
                                                   requires_grad = True),
-                                     torch.tensor([1.0],
+                                     torch.tensor([self.reward],
                                                   requires_grad = True))
         
-        agent_loss.backward()
-
-        self.optimizer_agent.step()
+        self.optimizer_agent.step(agent_loss.backward())
 
         critic_loss = self.get_critic_loss(data, current_user_history)
 
-        critic_loss.backward()
-
-        self.optimizer_critic.step()
+        self.optimizer_critic.step(critic_loss.backward())
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
