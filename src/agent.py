@@ -216,13 +216,17 @@ class agent:
         
         selection_array = current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
         
-        critic_loss = 1E14
+        critic_loss = 0.0
 
         user_array = user_array.to_numpy()
 
         selection_array = selection_array.to_numpy()
 
+        pdb.set_trace()
+
         selection_array = selection_array[-10:]
+
+        selection_array = np.log10(selection_array) * -1.0
 
         # Convert to tensors for torch
 
@@ -234,14 +238,19 @@ class agent:
 
         end = selection_array.shape[0]
 
+        num = 0
+
         while end <= user_array.shape[0]:
 
-            if self.loss_critic(selection_array, user_array[start:end,])<critic_loss:
-                critic_loss=self.loss_critic(selection_array, user_array[start:end,])
+            num += 1
+
+            critic_loss+=self.loss_critic(selection_array,user_array[start:end,])
 
             start += 1
 
             end += 1
+
+        critic_loss = critic_loss / float(num)
 
         critic_loss = torch.tensor([critic_loss], requires_grad = True)
 
