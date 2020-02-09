@@ -25,16 +25,16 @@ class AgentModel(torch.nn.Module):
 
         self.dense = torch.nn.Linear(lstm_len, dense_len)
 
-        def forward(self, batch):
-            """ This function runs the prediciton sequence for the NN"""
+    def forward(self, batch):
+        """ This function runs the prediciton sequence for the NN"""
 
-            lstm_out, _ = self.lstm(batch)
+        lstm_out, _ = self.lstm(batch)
 
-            dense_out = self.dense(lstm_out.view(self.lstm_len, -1))
+        dense_out = self.dense(lstm_out.view(self.lstm_len, -1))
 
-            embeddings_out = torch.nn.functional.log_softmax(dense_out, dim=1)
+        embeddings_out = torch.nn.functional.log_softmax(dense_out, dim=1)
 
-            return(embeddings_out)
+        return(embeddings_out)
 
 class CriticModel(torch.nn.Module):
 
@@ -64,17 +64,17 @@ class CriticModel(torch.nn.Module):
 
         self.dense_3 = torch.nn.Linear(dense_2_len, 1)
 
-        def forward(self, batch):
-            """ This function runs the prediciton sequence for the NN"""
+    def forward(self, batch):
+        """ This function runs the prediciton sequence for the NN"""
 
-            lstm_out, _ = self.lstm(batch)
+        lstm_out, _ = self.lstm(batch)
 
-            dense_1_out = self.dense_1(lstm_out.view(self.lstm_len, -1))
+        dense_1_out = self.dense_1(lstm_out.view(self.lstm_len, -1))
 
-            dense_2_out = self.dense_2(dense_1_out.view(self.dense_1_len, -1))
+        dense_2_out = self.dense_2(dense_1_out.view(self.dense_1_len, -1))
 
-            dense_3_out = self.dense_3(dense_2_out.view(self.dense_0_len, -1))
+        dense_3_out = self.dense_3(dense_2_out.view(self.dense_0_len, -1))
 
-            reward_out = torch.nn.functional.log_softmax(dense_out, dim=1)
+        reward_out = torch.nn.functional.log_softmax(dense_out, dim=1)
 
-            return(reward_out)
+        return(reward_out)
