@@ -38,7 +38,7 @@ class AgentModel(torch.nn.Module):
 
         dense_out = self.dense(lstm_out)
 
-        embeddings_out = torch.nn.functional.log_softmax(dense_out)
+        embeddings_out = torch.nn.functional.logsigmoid(dense_out)
 
         return(embeddings_out)
 
@@ -81,14 +81,20 @@ class CriticModel(torch.nn.Module):
 
         dense_1_out = self.dense_1(lstm_out)
 
-        torch.nn.functional.relu(dense_1_out)
+        dense_1_out = torch.nn.functional.relu(dense_1_out)
 
-        dense_2_out = self.dense_2(dense_1_out)
+        if self.dense_2_len > 0:
 
-        torch.nn.functional.relu(dense_2_out)
+            dense_2_out = self.dense_2(dense_1_out)
+
+            dense_2_out = torch.nn.functional.relu(dense_2_out)
+
+        else:
+
+            dense_2_out = dense_1_out
 
         dense_3_out = self.dense_3(dense_2_out)
 
-        reward_out = torch.nn.functional.log_softmax(dense_3_out)
+        reward_out = torch.nn.functional.logsigmoid(dense_3_out)
 
         return(reward_out)

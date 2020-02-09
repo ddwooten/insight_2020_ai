@@ -201,7 +201,9 @@ class agent:
         # Due to the square in the operation the magnitue of rward is limited
         # to 1E-7 due to machine precision concerns - verfied through testing
 
-        reward = 0.9999999 if reward > 0.9999999 else reward
+        if reward > 0.9999999:
+
+            reward = 0.9999999 
 
         self.reward = reward
 
@@ -272,7 +274,7 @@ class agent:
                                                   requires_grad = True),
                                      torch.tensor([1.0],
                                                   requires_grad = True))
-
+        
         agent_loss.backward()
 
         self.optimizer_agent.step()
