@@ -270,8 +270,8 @@ class agent:
 
         self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
-    def propogate(self, current_user_history, prediction, repeat):
-        """This function propogates the loss through the actor and critic"""
+    def propagate(self, current_user_history, prediction, repeat):
+        """This function propagates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
 

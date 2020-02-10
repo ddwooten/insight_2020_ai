@@ -56,7 +56,13 @@ class state:
         """This function selects a song from data based on its match to spotify
         dimentions"""
 
-        index = random.randint(0, 11)
+        if relax != 0:
+            
+            index = random.randint(0, 11)
+
+        else:
+
+            index = None
 
         # Slice off the tensor dimensions from torch, get the values
 
