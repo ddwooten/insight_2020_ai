@@ -22,7 +22,9 @@ def read_setup(setup):
 
     epochs_pattern = re.compile(r'(?i)epochs,\s*([0-9]+)')
 
-    path_pattern = re.compile(r'(?i)model_path,\s*([^,\n\r\t]*)')
+    agent_path_pattern = re.compile(r'(?i)model_agent_path,\s*([^,\n\r\t]*)')
+
+    critic_path_pattern = re.compile(r'(?i)model_critic_path,\s*([^,\n\r\t]*)')
 
     yes_pattern = re.compile(r'(?i)yes')
 
@@ -36,7 +38,9 @@ def read_setup(setup):
 
         epochs_match = epochs_pattern.search(line)
 
-        path_match = path_pattern.search(line)
+        agent_path_match = agent_path_pattern.search(line)
+
+        critic_path_match = critic_path_pattern.search(line)
 
         if train_match is not None:
 
@@ -58,9 +62,12 @@ def read_setup(setup):
 
             output['epochs'] = int(epochs_match.groups(1)[0])
 
-        if path_match is not None:
+        if agent_path_match is not None:
 
-            output['model_path'] = path_match.groups(1)[0]
+            output['model_agent_path'] = agent_path_match.groups(1)[0]
 
+        if critic_path_match is not None:
+
+            output['model_critic_path'] = critic_path_match.groups(1)[0]
 
     return(output)

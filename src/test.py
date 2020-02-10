@@ -6,6 +6,7 @@
 
 import re as re 
 import datetime
+import pdb
 from utilities import *
 
 def read_setup_test():
@@ -13,7 +14,7 @@ def read_setup_test():
 
     test_value = 0
 
-    eval_case = {'train':1, 'data':'../data/clean.pk', 'model':'lstm','epochs':1000, 'model_path':'../models/in_service.hdf5'}
+    eval_case = {'train':0, 'data':'../data/clean.pk', 'model':'lstm','epochs':10000, 'model_agent_path':'../models/end_agent', 'model_critic_path' : '../models/end_critic'}
 
     try:
 
@@ -47,7 +48,7 @@ def test():
 
     try:
 
-        out_file = open("test.test","w")
+        out_file = open("Test.test","w")
 
     except OSError:
 

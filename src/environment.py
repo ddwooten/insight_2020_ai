@@ -36,7 +36,9 @@ class environment:
 
         else:
 
-            self.querry_agent()
+            report = self.querry_agent()
+
+            print("Rec: {}.\n".format(report))
     
     def train_agent(self):
         """This function manages the training of an agent"""
@@ -89,15 +91,16 @@ class environment:
 
         # Save the loss arrays as csvs
 
-        np.savetxt('./agent_loss.csv', self.agent_loss, delimiter=',')
+        np.savetxt('./Agent_loss.csv', self.agent_loss, delimiter=',')
 
-        np.savetxt('./critic_loss.csv', self.critic_loss, delimiter=',')
+        np.savetxt('./Critic_loss.csv', self.critic_loss, delimiter=',')
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
 
-        self.agent.ready_agent( self.setup_dict['model_path'], 
-                                self.setup_dict['train'])
+        self.agent.ready_agent(self.setup_dict['model_agent_path'], 
+                               self.setup_dict['model_critic_path'], 
+                               self.setup_dict['train'])
 
         self.state.get_sample_input()
 
@@ -105,7 +108,7 @@ class environment:
 
         self.state.produce(self.agent.pred, 0.1)
 
-        self.predictions.append(self.state.product.track_id.value)
+        self.predictions.append(self.state.product.track_id.values[0])
 
-        print("The prediction made was {}.\n".format(self.state.product.track_id.value))
+        return(self.state.product.track_id.values[0])
 

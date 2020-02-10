@@ -38,7 +38,7 @@ class AgentModel(torch.nn.Module):
 
         dense_out = self.dense(lstm_out)
 
-        embeddings_out = torch.nn.functional.sigmoid(dense_out)
+        embeddings_out = torch.sigmoid(dense_out)
 
         return(embeddings_out)
 
@@ -101,6 +101,6 @@ class CriticModel(torch.nn.Module):
 
         dense_3_out = self.dense_3(dense_2_out)
 
-        reward_out = torch.nn.functional.sigmoid(dense_3_out)
+        reward_out = torch.sigmoid(dense_3_out)
 
         return(reward_out)

@@ -281,7 +281,7 @@ class agent:
 
         critic_loss = self.get_critic_loss(current_user_history)
 
-        critic_loss = critic_loss * 100.0
+        critic_loss = critic_loss
 
         self.optimizer_critic.step(critic_loss.backward())
 
@@ -304,6 +304,7 @@ class agent:
         if self.model_agent is not None:
             
             print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
+
     def set_model_weights(self, model):
         """This function initilizes the weights in pytorch model"""
 
