@@ -1,4 +1,5 @@
 Creator: Daniel Wooten
+
 Licence: This repository is covered by the Eclipse public licence, please see
 [spdx.org/licences/EPL-1.0.html] for the licence text.
 
@@ -11,8 +12,8 @@ What is "What Next?" (WN)? WN is a framework for developing reinforcement
 learning based recommendation systems. WN provides a deployment ready and
 scaleable infrastructure upon which to implement any given RL algorithm. While
 existing as a fairly low level API WN provides an excellent template from which
-to expand out an existing RL model, tune hyperparameters, or experiement with
-loss functions. WN was built with modularity and itteration in mind - these
+to expand out an existing RL model, tune hyperparameters, or experiment with
+loss functions. WN was built with modularity and iteration in mind - these
 choices being reflected in the straightforward architecture.
 
 ## Installation
@@ -34,7 +35,7 @@ system, and follow the instructions in section **Setup** below.
 ## Setup
 Once you've cloned into this repo you will find three sub-directories, *data*,
 *src* and *models*. *data* is where all training data is kept. Such data is
-stored in pickles and the curent hard coded name for the pickle containing
+stored in pickles and the current hard coded name for the pickle containing
 the training data is *clean.pk* - this may be altered in *main.py*. Inside of
 *models* is where saved PyTorch model instances are kept following their
 generation during training runs. This is also where models are loaded from
@@ -42,10 +43,10 @@ for model inference.
 
 Inside of *src* are all the files that make WN tick. The first to understand
 is *setup.txt* - this is a raw text file which holds the simulation
-configuation. The contents of *setup.txt* - which should be edited by you - are
+configuration. The contents of *setup.txt* - which should be edited by you - are
 given below in a *key, value* format. 
-*setup.txt* is not sensative to capitalization, linebreaks, or
-whitespace - it operates as a ***comma*** seperated file. 
+*setup.txt* is not sensitive to capitalization, line-breaks, or
+whitespace - it operates as a ***comma*** separated file. 
 
 *train, [yes/no]
 *model, [option] (currently this is only 'lstm')
@@ -64,18 +65,18 @@ runs any tests enumerated by the *tests* dictionary found inside of
 *run_tests()*. At this time there is only one test which tests the reading of
 *setup.txt* and the processing of its input dictionary. To run the tests simple
 execute the *test.py* file - it will handle the rest and output, in the
-executing dirctory, the test results in a file tittled *Test.test*.
+executing directory, the test results in a file titled *Test.test*.
 
 Moving on to the main program, executed by calling *main.py*, there are two
-modes of operation - training and inference. These two modese are activated, 
+modes of operation - training and inference. These two modes are activated, 
 respectively, by the "yes" and "no" flag given to the "train" key in
-*setup.txt*. In *main.py* the simulation framework is built whith the key
+*setup.txt*. In *main.py* the simulation framework is built with the key
 components, state and agent, being passed to the environment class. 
 
 The environment class is contained in *environment.py* and manages the
 interactions between the state and agent classes. The state class is contained
 in *state.py* and the agent class in *agent.py*. The state class is largely
-responsible for data handling, format, passing, and retreival. The agent class
+responsible for data handling, format, passing, and retrieval. The agent class
 is entirely responsible for model training and inference. The model
 ***classes*** - AgentModel and CriticModel - are both found inside *model.py*
 and contain the build instructions as well as the forward pass instructions
@@ -91,7 +92,7 @@ first the agent is asked to make an inference of the embeddings through the
 state class *predict* method which produces a randomly selected
 "entity-to-be-recommended" - in this case a song - from a list of entities with
 similar embeddings. This recommendation as selected by state is passed to agent
-through the *propogation()* method which, in short, caculates and backpropogates
+through the *propagation()* method which, in short, calculates and backpropagates
 the gradients for the neural net to update itself with. Throughout this process
 at pre-defined intervals *train_agent()* carries out its other task - saving
 the PyTorch model to disk for later use.
@@ -101,21 +102,21 @@ called for training after instantiation is *wake_agent()* which then calls
 *add_model()* which executes a series of steps - calling the model constructors
 for both AgentModel and CriticModel from the model class as well as assigning
 loss and optimization functions for both the agent and critic models. Whenever
-*predict()* is called the given user_history is passed off to *factorize()* 
-which breaks down the user_history into numpy arrays which the models can then
+*predict()* is called the given user\_history is passed off to *factorize()* 
+which breaks down the user\_history into numpy arrays which the models can then
 use. The arrays which are produced are factors for both agent and critic. 
 Following this factorization an inference is asked of the agent model. In the
-case of *propogate()* the actual song selected by the state classes's 
+case of *propagate()* the actual song selected by the state classes's 
 *produce()* method is appended to the critic factors via the *add_prediction()*
 method. These critic factors are then passed to a forward inference of the
 critic model from which the reward is generated and used to arrive at the loss
-for the agent. Once this loss has been backpropogated through the gradients of
+for the agent. Once this loss has been backpropagated through the gradients of
 the agent model the critic loss is returned from the *get_critic_loss()*
-method and backpropogated through the critic's model. 
+method and backpropagated through the critic's model. 
 
 Currently the critic loss is assessed as the difference between the sample
 standard deviation of the intra-song embedding distances with and without the
-recommendation as compared to the standard deivation of the population, in
+recommendation as compared to the standard deviation of the population, in
 this case all songs that a user has listened to. 
 
 In the case of inference, where training is set to "no", the environment class
@@ -125,7 +126,7 @@ actor and critic models from the specified path given in *setup.txt*.
 
 With regards to the internals of the state class, it has two primary methods
 both called upon by the environment class - *get_random_user_history()* which
-returns a random complete user history from all user historys while 
+returns a random complete user history from all user histories while 
 *produce()* selects a random song who's embedding's match the input 
 *attributes*. If *produce()* is given a *relax* parameter a random
 embedding is extended to accept values within the range of +/- relax/2.
