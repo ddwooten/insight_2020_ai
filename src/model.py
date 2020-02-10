@@ -32,6 +32,9 @@ class AgentModel(torch.nn.Module):
 
         lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
 
+        # This squeeze function pulls out the output signal for each lstm
+        # cell for the last time step in the sequence
+
         lstm_out = lstm_out.squeeze()[-1,:]
 
         lstm_out = torch.nn.functional.relu(lstm_out)
@@ -80,6 +83,9 @@ class CriticModel(torch.nn.Module):
         """ This function runs the prediciton sequence for the NN"""
 
         lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
+
+        # This squeeze function pulls out the output signal for each lstm
+        # cell for the last time step in the sequence
 
         lstm_out = lstm_out.squeeze()[-1,:]
         

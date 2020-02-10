@@ -4,7 +4,6 @@
 import numpy as np
 import torch
 import math
-from sklearn import metrics as sk
 import pdb
 from model import AgentModel, CriticModel
 
@@ -188,7 +187,7 @@ class agent:
         """This function gets the agent reward""" 
 
         # if the track is something the user has heard before take the reward
-        # the (1/2)
+        # to the (1/2)
 
         if repeat > 0:
 
@@ -222,6 +221,9 @@ class agent:
 
         sel_len = selection_array.shape[0]
 
+        # Get the euclidean distance between the embeddings of each song to
+        # each song (n^2) without the recommendation
+
         distances = np.zeros((sel_len - 1) * (sel_len - 1))
 
         for i in range(sel_len - 1):
@@ -234,12 +236,18 @@ class agent:
 
         distances = np.zeros((sel_len) * (sel_len))
 
+        # Get the euclidean distance between the embeddings of each song to
+        # each song (n^2) with the recommendation
+
         for i in range(sel_len):
             
             for j in range(sel_len):
 
                 distances[j + j*i] = np.sqrt(np.sum(np.power((selection_array[j] - selection_array[i]),2)))
-        
+       
+        # The differnce between the possible distribution adjustment and the
+        # actual distribution adjustment gives the loss 
+
         achieved = abs(current_user_history['sd'].values[0] - np.std(distances))
 
         total_possible = torch.tensor([total_possible])
@@ -267,17 +275,25 @@ class agent:
 
         self.add_prediction(prediction)
 
+        # Clear out the gradients from the last prediction
+
         self.model_agent.zero_grad()
 
         self.model_critic.zero_grad()
 
+        # Get the critic reward
+
         self.reward = self.model_critic(torch.Tensor(self.factors_critic))
 
         self.get_agent_reward(repeat)
+
+        # Get the agent loss and apply it
         
         agent_loss = self.loss_agent(self.reward, torch.tensor([1.0]))
         
         self.optimizer_agent.step(agent_loss.backward())
+
+        # Get the critic loss and apply it
 
         critic_loss = self.get_critic_loss(current_user_history)
 
@@ -306,7 +322,7 @@ class agent:
             print("Critic Model {} sucessuflly loaded.\n".format(critic_model_path))
 
     def set_model_weights(self, model):
-        """This function initilizes the weights in pytorch model"""
+        """This function initilizes the weights in a pytorch model"""
 
         classname = model.__class__.__name__
 
