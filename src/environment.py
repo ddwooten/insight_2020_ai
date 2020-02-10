@@ -57,8 +57,7 @@ class environment:
 
             self.state.produce(self.agent.pred, 0.01)
 
-            self.agent.propogate(self.state.data,
-                                 self.state.current_user_history, 
+            self.agent.propogate(self.state.current_user_history, 
                                  self.state.product,
                                  self.state.repeat)
 
@@ -66,8 +65,8 @@ class environment:
 
             self.loss_critic.append(self.agent.critic_loss)
 
-            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()),
-                                                self.agent.critic_loss.item()))
+            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()), self.agent.critic_loss.item()))
+
             if np.mod(100, epoch) == 0: 
 
                 # Save the model now that it has been trained

@@ -57,7 +57,7 @@ class agent:
 
         self.loss_agent = torch.nn.MSELoss()
 
-        self.loss_critic = torch.nn.KLDivLoss()
+        self.loss_critic = torch.nn.MSELoss()
 
     def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
@@ -205,52 +205,48 @@ class agent:
 
             reward = 0.9999999 
 
+        reward = torch.tensor([reward], requires_grad = True)
+
         self.reward = reward
 
-    def get_critic_loss(self, data, current_user_history):
+    def get_critic_loss(self, current_user_history):
         """This function get the critic loss"""
 
-        user = data[data.user_id == current_user_history.user_id.values[0]]
-
-        user_array = user[['instrumentalness', 'liveness', 'speechiness', 'danceability', 'valence', 'loudness', 'tempo', 'acousticness', 'energy', 'm', 'k']]
-        
         selection_array = current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
-        
+       
         critic_loss = 0.0
-
-        user_array = user_array.to_numpy()
 
         selection_array = selection_array.to_numpy()
 
-        pdb.set_trace()
-
         selection_array = selection_array[-10:]
 
-        selection_array = np.log10(selection_array) * -1.0
+        sel_len = selection_array.shape[0]
 
-        # Convert to tensors for torch
+        distances = np.zeros((sel_len - 1) * (sel_len - 1))
 
-        user_array = torch.tensor(user_array)
+        for i in range(sel_len - 1):
+            
+            for j in range(sel_len - 1):
 
-        selection_array = torch.tensor(selection_array, requires_grad = True)
+                distances[j + j*i] = np.sqrt(np.sum(np.power((selection_array[j] - selection_array[i]),2)))
 
-        start = 0
+        total_possible = abs(current_user_history['sd'].values[0] - np.std(distances))
 
-        end = selection_array.shape[0]
+        distances = np.zeros((sel_len) * (sel_len))
 
-        num = 0
+        for i in range(sel_len):
+            
+            for j in range(sel_len):
 
-        while end <= user_array.shape[0]:
+                distances[j + j*i] = np.sqrt(np.sum(np.power((selection_array[j] - selection_array[i]),2)))
+        
+        achieved = abs(current_user_history['sd'].values[0] - np.std(distances))
 
-            num += 1
+        total_possible = torch.tensor([total_possible])
 
-            critic_loss+=self.loss_critic(selection_array,user_array[start:end,])
+        achieved = torch.tensor([achieved], requires_grad = True)
 
-            start += 1
-
-            end += 1
-
-        critic_loss = critic_loss / float(num)
+        critic_loss = self.loss_critic(achieved,total_possible)
 
         critic_loss = torch.tensor([critic_loss], requires_grad = True)
 
@@ -266,7 +262,7 @@ class agent:
 
         self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
-    def propogate(self, data, current_user_history, prediction, repeat):
+    def propogate(self, current_user_history, prediction, repeat):
         """This function propogates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
@@ -279,14 +275,13 @@ class agent:
 
         self.get_agent_reward(repeat)
         
-        agent_loss = self.loss_agent(torch.tensor([1.0],
-                                                  requires_grad = True),
-                                     torch.tensor([self.reward],
-                                                  requires_grad = True))
+        agent_loss = self.loss_agent(self.reward, torch.tensor([1.0]))
         
         self.optimizer_agent.step(agent_loss.backward())
 
-        critic_loss = self.get_critic_loss(data, current_user_history)
+        critic_loss = self.get_critic_loss(current_user_history)
+
+        critic_loss = critic_loss * 100.0
 
         self.optimizer_critic.step(critic_loss.backward())
 
