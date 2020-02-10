@@ -26,7 +26,7 @@ The necessary Python 3 packages for WN to run include and are limited to
 * math
 * datetime
 
-Personally I find it easiest to install the above pckages with conda.
+Personally I find it easiest to install the above packages with conda.
 
 Following the acquisition of the above packages clone this repo, adjust
 the bash line in *main.py* and *test.py*, make both executable files on your
