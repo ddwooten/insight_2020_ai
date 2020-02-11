@@ -41,7 +41,7 @@ class AgentModel(torch.nn.Module):
 
         dense_out = self.dense(lstm_out)
 
-        embeddings_out = torch.sigmoid(dense_out)
+        embeddings_out = torch.nn.functional.softmax(dense_out)
 
         return(embeddings_out)
 

@@ -58,7 +58,7 @@ class state:
 
         if relax != 0:
             
-            index = random.randint(0, 11)
+            index = random.randint(0, 3)
 
         else:
 
@@ -66,21 +66,19 @@ class state:
 
         # Slice off the tensor dimensions from torch, get the values
 
-        attr = [0] * 11
+        attr = [0] * 4 
 
-        for i in range(11):
+        for i in range(4):
 
             attr[i] = attributes[i].item()
 
-        attrlow = [0] * 11
+        attrlow = [0] *4 
 
-        attrhigh = [0] * 11
+        attrhigh = [0] * 4 
 
-        for i in range(11):
+        for i in range(4):
 
             if i == index:
-
-                # attr is a two dimensional array (1,11) given by TF
 
                 attrlow[i] = attr[i] * (1.0 - (relax/2.0))
 
@@ -94,28 +92,17 @@ class state:
         
         try:
 
-            self.product = self.data[(self.data.instrumentalness >= attrlow[0]) &\
-                                     (self.data.instrumentalness <= attrhigh[0]) &\
-                                     (self.data.liveness >= attrlow[1]) &\
-                                     (self.data.liveness <= attrhigh[1]) &\
-                                     (self.data.speechiness >= attrlow[2]) &\
-                                     (self.data.speechiness <= attrhigh[2]) &\
-                                     (self.data.danceability >= attrlow[3]) &\
-                                     (self.data.danceability <= attrhigh[3]) &\
-                                     (self.data.valence >= attrlow[4]) &\
-                                     (self.data.valence <= attrhigh[4]) &\
-                                     (self.data.loudness >= attrlow[5]) &\
-                                     (self.data.loudness <= attrhigh[5]) &\
-                                     (self.data.tempo >= attrlow[6]) &\
-                                     (self.data.tempo <= attrhigh[6]) &\
-                                     (self.data.acousticness >= attrlow[7]) &\
-                                     (self.data.acousticness <= attrhigh[7]) &\
-                                     (self.data.energy >= attrlow[8]) &\
-                                     (self.data.energy <= attrhigh[8]) &\
-                                     (self.data.m >= attrlow[9]) &\
-                                     (self.data.m <= attrhigh[9]) &\
-                                     (self.data.k >= attrlow[10]) &\
-                                     (self.data.k <= attrhigh[10])].sample(1)
+            self.product = self.data[(self.data.r0 >= attrlow[0]) &\
+                                     (self.data.r0 <= attrhigh[0]) &\
+                                     (self.data.r1 >= attrlow[1]) &\
+                                     (self.data.r1 <= attrhigh[1]) &\
+                                     (self.data.r2 >= attrlow[2]) &\
+                                     (self.data.r2<= attrhigh[2]) &\
+                                     (self.data.r3 >= attrlow[3]) &\
+                                     (self.data.r3 <= attrhigh[3]) &\
+                                     (self.data.r4 >= attrlow[4]) &\
+                                     (self.data.r4 <= attrhigh[4])].sample(1)
+                                     
 
         except ValueError:
 

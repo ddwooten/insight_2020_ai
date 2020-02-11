@@ -40,9 +40,9 @@ class agent:
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel(15, 20, 11)
+        self.model_agent = AgentModel(10, 20, 4)
 
-        self.model_critic = CriticModel(13, 21, 10, 0)
+        self.model_critic = CriticModel(9, 21, 10, 0)
 
         self.set_model_weights(self.model_agent)
 
@@ -97,9 +97,9 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 20, 15))
+        self.factors_agent = np.zeros((1, 20, 10))
 
-        self.factors_critic = np.zeros((1, 21, 13))
+        self.factors_critic = np.zeros((1, 21, 9))
 
         # This i here is to conform with tensorflow input expectations
 
@@ -120,62 +120,46 @@ class agent:
             if j == 20:
 
                 break
-
+            # In an act of data reduction and factor selection, I drop
+            # all spotify embeddings and deploy my own
+            
             self.factors_agent[i, j, 0] = row['score']
 
-            self.factors_critic[i, j, 0] = row['avg']
+            self.factors_critic[i, j, 0] = row['score']
 
-            self.factors_agent[i, j, 1] = row['instrumentalness']
+            self.factors_agent[i, j, 1] = row['r0']
 
-            self.factors_critic[i, j, 1] = row['instrumentalness']
+            self.factors_critic[i, j, 1] = row['r0']
 
-            self.factors_agent[i, j, 2] = row['liveness']
+            self.factors_agent[i, j, 2] = row['r1']
 
-            self.factors_critic[i, j, 2] = row['liveness']
+            self.factors_critic[i, j, 2] = row['r1']
 
-            self.factors_agent[i, j, 3] = row['speechiness']
+            self.factors_agent[i, j, 3] = row['r2']
 
-            self.factors_critic[i, j, 3] = row['speechiness']
+            self.factors_critic[i, j, 3] = row['r2']
 
-            self.factors_agent[i, j, 4] = row['danceability']
+            self.factors_agent[i, j, 4] = row['r3']
 
-            self.factors_critic[i, j, 4] = row['danceability']
+            self.factors_critic[i, j, 4] = row['r3']
 
-            self.factors_agent[i, j, 5] = row['valence']
+            self.factors_agent[i, j, 5] = row['m']
 
-            self.factors_critic[i, j, 5] = row['valence']
+            self.factors_critic[i, j, 5] = row['m']
 
-            self.factors_agent[i, j, 6] = row['loudness']
+            self.factors_agent[i, j, 6] = row['k']
 
-            self.factors_critic[i, j, 6] = row['loudness']
+            self.factors_critic[i, j, 6] = row['k']
 
-            self.factors_agent[i, j, 7] = row['tempo']
+            self.factors_agent[i, j, 7] = row['day_w']
 
-            self.factors_critic[i, j, 7] = row['tempo']
+            self.factors_critic[i, j, 7] = row['sd']
 
-            self.factors_agent[i, j, 8] = row['acousticness']
+            self.factors_agent[i, j, 8] = row['day_m']
 
-            self.factors_critic[i, j, 8] = row['acousticness']
+            self.factors_critic[i, j, 8] = row['avg']
 
-            self.factors_agent[i, j, 9] = row['energy']
-
-            self.factors_critic[i, j, 9] = row['energy']
-
-            self.factors_agent[i, j, 10] = row['m']
-
-            self.factors_critic[i, j, 10] = row['m']
-
-            self.factors_agent[i, j, 11] = row['k']
-
-            self.factors_critic[i, j, 11] = row['k']
-
-            self.factors_agent[i, j, 12] = row['day_w']
-
-            self.factors_critic[i, j, 12] = row['sd']
-
-            self.factors_agent[i, j, 13] = row['day_m']
-
-            self.factors_agent[i, j, 14] = row['hour_d']
+            self.factors_agent[i, j, 9] = row['hour_d']
 
             j += 1
 
@@ -211,9 +195,9 @@ class agent:
     def get_critic_loss(self, current_user_history):
         """This function get the critic loss"""
 
-        selection_array = current_user_history[['instrumentalness', 'liveness','speechiness', 'danceability', 'valence', 'loudness', 'tempo','acousticness', 'energy', 'm', 'k']]
+        selection_array = current_user_history[['r0','r1','r2','r3']]
        
-        critic_loss = 0.0
+        critic_loss = 1E18
 
         selection_array = selection_array.to_numpy()
 
