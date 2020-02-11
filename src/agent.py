@@ -56,7 +56,7 @@ class agent:
 
         self.loss_agent = torch.nn.MSELoss()
 
-        self.loss_critic = torch.nn.MSELoss()
+        self.loss_critic = torch.nn.KLDivLoss()
 
     def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
@@ -65,31 +65,23 @@ class agent:
 
         j = self.history_len
 
-        self.factors_critic[i, j, 0] = prediction['avg']
+        self.factors_critic[i, j, 0] = prediction['score']
 
-        self.factors_critic[i, j, 1] = prediction['instrumentalness']
+        self.factors_critic[i, j, 1] = prediction['r0']
 
-        self.factors_critic[i, j, 2] = prediction['liveness']
+        self.factors_critic[i, j, 2] = prediction['r1']
 
-        self.factors_critic[i, j, 3] = prediction['speechiness']
+        self.factors_critic[i, j, 3] = prediction['r2']
 
-        self.factors_critic[i, j, 4] = prediction['danceability']
+        self.factors_critic[i, j, 4] = prediction['r3']
 
-        self.factors_critic[i, j, 5] = prediction['valence']
+        self.factors_critic[i, j, 5] = prediction['sd']
 
-        self.factors_critic[i, j, 6] = prediction['loudness']
+        self.factors_critic[i, j, 6] = prediction['avg']
 
-        self.factors_critic[i, j, 7] = prediction['tempo']
+        self.factors_critic[i, j, 7] = prediction['m']
 
-        self.factors_critic[i, j, 8] = prediction['acousticness']
-
-        self.factors_critic[i, j, 9] = prediction['energy']
-
-        self.factors_critic[i, j, 10] = prediction['m']
-
-        self.factors_critic[i, j, 11] = prediction['k']
-
-        self.factors_critic[i, j, 12] = prediction['sd']
+        self.factors_critic[i, j, 8] = prediction['k']
 
     def factorize(self, user_history):
         """This function factorizes a given user history, or batch of user
@@ -192,53 +184,40 @@ class agent:
 
         self.reward = reward
 
-    def get_critic_loss(self, current_user_history):
+    def get_critic_loss(self, current_user_history, data):
         """This function get the critic loss"""
+
+        user = data[data.user_id == current_user_history.user_id,
+                    ['r0','r1','r2','r3']]
 
         selection_array = current_user_history[['r0','r1','r2','r3']]
        
-        critic_loss = 1E18
+        critic_loss = []
+
+        user_array = user_array.to_numpy()
 
         selection_array = selection_array.to_numpy()
 
         selection_array = selection_array[-10:]
 
-        sel_len = selection_array.shape[0]
+        pdb.set_trace()
 
-        # Get the euclidean distance between the embeddings of each song to
-        # each song (n^2) without the recommendation
+        selection_array = -1.0 * np.log10(selection_array)
 
-        distances = np.zeros((sel_len - 1) * (sel_len - 1))
+        end  = selection_array.shape[0]
 
-        for i in range(sel_len - 1):
+        start = 0
+
+        while end < user_array.shape[0]:
             
-            for j in range(sel_len - 1):
+            critic_loss.append(self.loss_critic(selection_array,\
+                                                user_array[start:end,]))
 
-                distances[j + j*i] = np.sqrt(np.sum(np.power((selection_array[j] - selection_array[i]),2)))
+            start += 1
 
-        total_possible = abs(current_user_history['sd'].values[0] - np.std(distances))
+            end += 1
 
-        distances = np.zeros((sel_len) * (sel_len))
-
-        # Get the euclidean distance between the embeddings of each song to
-        # each song (n^2) with the recommendation
-
-        for i in range(sel_len):
-            
-            for j in range(sel_len):
-
-                distances[j + j*i] = np.sqrt(np.sum(np.power((selection_array[j] - selection_array[i]),2)))
-       
-        # The differnce between the possible distribution adjustment and the
-        # actual distribution adjustment gives the loss 
-
-        achieved = abs(current_user_history['sd'].values[0] - np.std(distances))
-
-        total_possible = torch.tensor([total_possible])
-
-        achieved = torch.tensor([achieved], requires_grad = True)
-
-        critic_loss = self.loss_critic(achieved,total_possible)
+        critic_loss = np.average(critic_loss)
 
         critic_loss = torch.tensor([critic_loss], requires_grad = True)
 
@@ -254,7 +233,7 @@ class agent:
 
         self.pred = self.model_agent(torch.Tensor(self.factors_agent))
 
-    def propagate(self, current_user_history, prediction, repeat):
+    def propagate(self, current_user_history, data, prediction, repeat):
         """This function propagates the loss through the actor and critic"""
 
         self.add_prediction(prediction)
@@ -279,7 +258,7 @@ class agent:
 
         # Get the critic loss and apply it
 
-        critic_loss = self.get_critic_loss(current_user_history)
+        critic_loss = self.get_critic_loss(data, current_user_history)
 
         critic_loss = critic_loss
 

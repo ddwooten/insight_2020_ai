@@ -68,6 +68,7 @@ class environment:
             # This is the gradient propagation call
 
             self.agent.propagate(self.state.current_user_history, 
+                                 self.state.data, 
                                  self.state.product,
                                  self.state.repeat)
 

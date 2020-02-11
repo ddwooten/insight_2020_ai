@@ -99,9 +99,7 @@ class state:
                                      (self.data.r2 >= attrlow[2]) &\
                                      (self.data.r2<= attrhigh[2]) &\
                                      (self.data.r3 >= attrlow[3]) &\
-                                     (self.data.r3 <= attrhigh[3]) &\
-                                     (self.data.r4 >= attrlow[4]) &\
-                                     (self.data.r4 <= attrhigh[4])].sample(1)
+                                     (self.data.r3 <= attrhigh[3])].sample(1)
                                      
 
         except ValueError:
