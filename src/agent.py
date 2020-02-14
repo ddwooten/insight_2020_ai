@@ -63,7 +63,7 @@ class agent:
         
         i = 0
 
-        j = self.history_len
+        j = self.history_len 
 
         self.factors_critic[i, j, 0] = prediction['score']
 
@@ -137,7 +137,7 @@ class agent:
 
             # The last entry in a history is the one we attempt to predict
 
-            if j == (user_history.shape[0] - 1):
+            if j == (user_history.shape[0]):
 
                 break
             
