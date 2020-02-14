@@ -74,27 +74,30 @@ class environment:
 
             self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
 
-            self.loss_critic.append(self.agent.critic_loss)
+            self.loss_critic.append(self.agent.critic_loss.detach().numpy()[0])
 
-            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()), self.agent.critic_loss.item()))
+            if np.isnan(self.loss_critic).any():
+                pdb.set_trace()
+
+            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()), self.agent.critic_loss.detach().numpy()[0]))
             
             # Save the model 
 
             if np.mod(100, epoch) == 0: 
 
-                model_name = 'agent_model_{}'.format(datetime.now())
+                model_name = 'agent_model'
 
                 torch.save(self.agent.model_agent, '../models/' + model_name)
 
-                model_name = 'critic_model_{}'.format(datetime.now())
+                model_name = 'critic_model'
 
                 torch.save(self.agent.model_critic, '../models/' + model_name)
         
-        model_name = 'end_agent_model_{}'.format(datetime.now())
+        model_name = 'end_agent_model'
 
         torch.save(self.agent.model_agent, '../models/' + model_name)
 
-        model_name = 'end_critic_model_{}'.format(datetime.now())
+        model_name = 'end_critic_model'
 
         torch.save(self.agent.model_critic, '../models/' + model_name)
 

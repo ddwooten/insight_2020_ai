@@ -40,9 +40,9 @@ class agent:
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel(10, 20, 4)
+        self.model_agent = AgentModel(12, 20, 6)
 
-        self.model_critic = CriticModel(9, 21, 10, 0)
+        self.model_critic = CriticModel(11, 21, 10, 0)
 
         self.set_model_weights(self.model_agent)
 
@@ -56,7 +56,7 @@ class agent:
 
         self.loss_agent = torch.nn.MSELoss()
 
-        self.loss_critic = torch.nn.KLDivLoss()
+        self.loss_critic = torch.nn.MSELoss()
 
     def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
@@ -75,23 +75,57 @@ class agent:
 
         self.factors_critic[i, j, 4] = prediction['r3']
 
-        self.factors_critic[i, j, 5] = prediction['sd']
+        self.factors_critic[i, j, 5] = prediction['r4']
 
-        self.factors_critic[i, j, 6] = prediction['avg']
+        self.factors_critic[i, j, 6] = prediction['r5']
 
-        self.factors_critic[i, j, 7] = prediction['m']
+        self.factors_critic[i, j, 7] = prediction['sd']
 
-        self.factors_critic[i, j, 8] = prediction['k']
+        self.factors_critic[i, j, 8] = prediction['avg']
 
+        self.factors_critic[i, j, 9] = prediction['m']
+
+        self.factors_critic[i, j, 10] = prediction['k']
+
+    def custom_loss_critic(self, target, selection, selection_averages,
+                           target_averages):
+        """This returns the normalized cross correlation between target and
+        selection"""
+
+        # These lines here compute the cross-correlation between target and
+        # selection
+
+        top = np.multiply((selection - selection_averages), 
+                          (target - target_averages))
+
+        top_sum = np.sum(top, axis = 0)
+
+        bottom_selection = np.power((selection - selection_averages),2)
+
+        bottom_targets = np.power((target - target_averages), 2)
+
+        bottom_selection_sum = np.sum(bottom_selection, axis = 0)
+
+        bottom_targets_sum = np.sum(bottom_targets, axis = 0)
+
+        bottom = np.sqrt(np.multiply(bottom_selection_sum,
+                                     bottom_targets_sum))
+
+        divided = np.divide(top_sum, bottom)
+
+        divided = divided[~np.isnan(divided)]
+
+        return(np.sum(divided))
+            
     def factorize(self, user_history):
         """This function factorizes a given user history, or batch of user
         histories, into factors for an lstm model"""
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 20, 10))
+        self.factors_agent = np.zeros((1, 20, 12))
 
-        self.factors_critic = np.zeros((1, 21, 9))
+        self.factors_critic = np.zeros((1, 21, 11))
 
         # This i here is to conform with tensorflow input expectations
 
@@ -135,23 +169,31 @@ class agent:
 
             self.factors_critic[i, j, 4] = row['r3']
 
-            self.factors_agent[i, j, 5] = row['m']
+            self.factors_agent[i, j, 5] = row['r4']
 
-            self.factors_critic[i, j, 5] = row['m']
+            self.factors_critic[i, j, 5] = row['r4']
 
-            self.factors_agent[i, j, 6] = row['k']
+            self.factors_agent[i, j, 6] = row['r5']
 
-            self.factors_critic[i, j, 6] = row['k']
+            self.factors_critic[i, j, 6] = row['r5']
 
-            self.factors_agent[i, j, 7] = row['day_w']
+            self.factors_agent[i, j, 7] = row['m']
 
-            self.factors_critic[i, j, 7] = row['sd']
+            self.factors_critic[i, j, 7] = row['m']
 
-            self.factors_agent[i, j, 8] = row['day_m']
+            self.factors_agent[i, j, 8] = row['k']
 
-            self.factors_critic[i, j, 8] = row['avg']
+            self.factors_critic[i, j, 8] = row['k']
 
-            self.factors_agent[i, j, 9] = row['hour_d']
+            self.factors_agent[i, j, 9] = row['day_w']
+
+            self.factors_critic[i, j, 9] = row['sd']
+
+            self.factors_agent[i, j, 10] = row['day_m']
+
+            self.factors_critic[i, j, 10] = row['avg']
+
+            self.factors_agent[i, j, 11] = row['hour_d']
 
             j += 1
 
@@ -187,22 +229,72 @@ class agent:
     def get_critic_loss(self, current_user_history, data):
         """This function get the critic loss"""
 
-        user = data[data.user_id == current_user_history.user_id,
-                    ['r0','r1','r2','r3']]
+        user = data[data.user_id == current_user_history.user_id.values[0]]
 
-        selection_array = current_user_history[['r0','r1','r2','r3']]
-       
-        critic_loss = []
+        user = user[['r0','r1','r2','r3', 'r4', 'r5']]
 
-        user_array = user_array.to_numpy()
+        user_array = user.to_numpy()
 
-        selection_array = selection_array.to_numpy()
+        # In order to use handy dandy numpy list comprehensions, we need to
+        # make an overly bulky array for the averages both for target and for
+        # selection ( as pssed to self.custom_loss_critic)
+
+        selection_averages = []
+
+        selection_averages.append(np.average(current_user_history.r0.values))
+
+        selection_averages.append(np.average(current_user_history.r1.values))
+
+        selection_averages.append(np.average(current_user_history.r2.values))
+
+        selection_averages.append(np.average(current_user_history.r3.values))
+
+        selection_averages.append(np.average(current_user_history.r4.values))
+
+        selection_averages.append(np.average(current_user_history.r5.values))
+
+        selection_averages = np.array(selection_averages)
+
+        # This line here gives selection_averages a 2nd dimension to match time
+        # while the repeat command coppies these average values through the time
+        # axis
+
+        selection_averages = np.repeat(selection_averages[None,:], 
+                                       current_user_history.shape[0],
+                                       axis = 0)
+
+        selection_averages = selection_averages[-10:]
+
+        selection_array=current_user_history[['r0','r1','r2','r3', 'r4', 'r5']]
 
         selection_array = selection_array[-10:]
 
-        pdb.set_trace()
+        selection_array = selection_array.to_numpy()
 
-        selection_array = -1.0 * np.log10(selection_array)
+        # Here we repeat this process for the whole user history as reflected
+        # byuser
+
+        target_averages = []
+
+        target_averages.append(np.average(user.r0.values))
+
+        target_averages.append(np.average(user.r1.values))
+       
+        target_averages.append(np.average(user.r2.values))
+       
+        target_averages.append(np.average(user.r3.values))
+       
+        target_averages.append(np.average(user.r4.values))
+       
+        target_averages.append(np.average(user.r5.values))
+        
+        target_averages = np.array(target_averages)
+
+        target_averages = np.repeat(target_averages[None, :],
+                                    selection_array.shape[0],
+                                    axis = 0)
+        
+        critic_loss = []
 
         end  = selection_array.shape[0]
 
@@ -210,20 +302,26 @@ class agent:
 
         while end < user_array.shape[0]:
             
-            critic_loss.append(self.loss_critic(selection_array,\
-                                                user_array[start:end,]))
+            critic_loss.append(self.custom_loss_critic(user_array[start:end,],
+                                                selection_array,
+                                                selection_averages,
+                                                target_averages))
 
             start += 1
 
             end += 1
 
-        critic_loss = np.average(critic_loss)
+        if len(critic_loss) > 0:
+
+            critic_loss = np.average(critic_loss)
+
+        else:
+
+            critic_loss = 0.0
 
         critic_loss = torch.tensor([critic_loss], requires_grad = True)
 
         self.critic_loss = critic_loss
-
-        return(critic_loss)
 
     def predict(self, user_history):
         """This function manages the training of the model based on the provided
@@ -258,11 +356,12 @@ class agent:
 
         # Get the critic loss and apply it
 
-        critic_loss = self.get_critic_loss(data, current_user_history)
+        self.get_critic_loss(current_user_history, data)
 
-        critic_loss = critic_loss
+        evaluated_critic_loss = self.loss_critic(self.critic_loss,
+                                                 torch.tensor([6.0]))
 
-        self.optimizer_critic.step(critic_loss.backward())
+        self.optimizer_critic.step(evaluated_critic_loss.backward())
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
