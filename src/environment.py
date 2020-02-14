@@ -45,10 +45,6 @@ class environment:
 
         # Reset the loss variables
 
-        self.agent_loss = []
-
-        self.critic_loss = []
-
         self.agent.wake_agent(self.setup_dict['train'])
 
         for epoch in range(self.setup_dict['epochs']):
@@ -60,26 +56,13 @@ class environment:
 
             self.agent.predict(self.state.current_user_history)
 
-            # This call here retrieves an actual event from the embeddings
-            # provided by the Agent
-
-            self.state.produce(self.agent.pred, 0.01)
-
             # This is the gradient propagation call
 
-            self.agent.propagate(self.state.current_user_history, 
-                                 self.state.data, 
-                                 self.state.product,
-                                 self.state.repeat)
+            self.agent.propagate()
 
-            self.loss_agent.append(math.pow((1.0 - self.agent.reward),2))
+            self.loss_agent.append(self.agent.agent_loss)
 
-            self.loss_critic.append(self.agent.critic_loss.detach().numpy()[0])
-
-            if np.isnan(self.loss_critic).any():
-                pdb.set_trace()
-
-            print("Actor Loss: {}\nCritic Loss:{}\n\n".format((1.0 - self.agent.reward.item()), self.agent.critic_loss.detach().numpy()[0]))
+            print("Actor Loss: {}\n".format(self.agent.agent_loss))
             
             # Save the model 
 
@@ -89,23 +72,13 @@ class environment:
 
                 torch.save(self.agent.model_agent, '../models/' + model_name)
 
-                model_name = 'critic_model'
-
-                torch.save(self.agent.model_critic, '../models/' + model_name)
-        
         model_name = 'end_agent_model'
 
         torch.save(self.agent.model_agent, '../models/' + model_name)
 
-        model_name = 'end_critic_model'
-
-        torch.save(self.agent.model_critic, '../models/' + model_name)
-
         # Save the loss arrays as csvs
 
         np.savetxt('./Agent_loss.csv', self.agent_loss, delimiter=',')
-
-        np.savetxt('./Critic_loss.csv', self.critic_loss, delimiter=',')
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""
@@ -117,8 +90,6 @@ class environment:
         self.state.get_random_user_history()
 
         self.agent.predict(self.state.current_user_history)
-
-        self.state.produce(self.agent.pred, 0.1)
 
         self.predictions.append(self.state.product.track_id.values[0])
 

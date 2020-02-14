@@ -11,6 +11,8 @@ class agent:
 
     def __init__(self):
 
+        self.agent_loss = None
+
         self.critic_loss = None
         
         self.factors_agent = None
@@ -42,21 +44,12 @@ class agent:
         
         self.model_agent = AgentModel(12, 20, 6)
 
-        self.model_critic = CriticModel(11, 21, 10, 0)
-
         self.set_model_weights(self.model_agent)
-
-        self.set_model_weights(self.model_critic)
 
         self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
                                                lr = 0.001)
 
-        self.optimizer_critic = torch.optim.Adam(self.model_critic.parameters(),
-                                               lr = 0.001)
-
         self.loss_agent = torch.nn.MSELoss()
-
-        self.loss_critic = torch.nn.MSELoss()
 
     def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
@@ -65,11 +58,11 @@ class agent:
 
         j = self.history_len
 
-        self.factors_critic[i, j, 0] = prediction['score']
+        self.factors[i, j, 0] = prediction['score']
 
-        self.factors_critic[i, j, 1] = prediction['r0']
+        self.factors[i, j, 1] = prediction['r0']
 
-        self.factors_critic[i, j, 2] = prediction['r1']
+        self.factors[i, j, 2] = prediction['r1']
 
         self.factors_critic[i, j, 3] = prediction['r2']
 
@@ -137,11 +130,9 @@ class agent:
 
             # The last entry in a history is the one we attempt to predict
 
-            if j == (user_history.shape[0] - 1):
+            if j == (user_history.shape[0]):
 
                 break
-            
-            # Truncating maximum history to ~1 day of continuous listening
 
             if j == 20:
 
@@ -198,7 +189,7 @@ class agent:
             j += 1
 
         i += 1
-
+        
         self.history_len = j
 
     def get_agent_reward(self, repeat):
@@ -329,39 +320,25 @@ class agent:
 
         self.factorize(user_history)
 
-        self.pred = self.model_agent(torch.Tensor(self.factors_agent))
+        self.pred = self.model_agent(torch.Tensor(self.factors_agent[:,:-1,:]))
 
-    def propagate(self, current_user_history, data, prediction, repeat):
+    def propagate(self):
         """This function propagates the loss through the actor and critic"""
-
-        self.add_prediction(prediction)
 
         # Clear out the gradients from the last prediction
 
         self.model_agent.zero_grad()
 
-        self.model_critic.zero_grad()
-
         # Get the critic reward
 
-        self.reward = self.model_critic(torch.Tensor(self.factors_critic))
+        pdb.set_trace()
 
-        self.get_agent_reward(repeat)
+        agent_loss = self.loss_agent(self.pred,
+                torch.tensor(self.factors_agent[0, self.history_len - 1, 1:7]))
 
-        # Get the agent loss and apply it
-        
-        agent_loss = self.loss_agent(self.reward, torch.tensor([1.0]))
+        self.agent_loss = agent_loss.detach().numpy()
         
         self.optimizer_agent.step(agent_loss.backward())
-
-        # Get the critic loss and apply it
-
-        self.get_critic_loss(current_user_history, data)
-
-        evaluated_critic_loss = self.loss_critic(self.critic_loss,
-                                                 torch.tensor([6.0]))
-
-        self.optimizer_critic.step(evaluated_critic_loss.backward())
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss

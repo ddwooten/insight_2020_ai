@@ -47,7 +47,7 @@ class state:
                         (self.data[self.data['user_id'] == user].shape[0] - 3))
 
             history_end = random.randint(history_start, \
-                            (self.data[self.data['user_id'] == user].shape[0]))
+                         (self.data[self.data['user_id'] == user].shape[0]))
 
         self.current_user_history = self.data[self.data[\
             'user_id'] == user].iloc[history_start:history_end,]
