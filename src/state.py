@@ -37,20 +37,11 @@ class state:
 
                 user = None
 
-        history_start = 0
-
-        history_end = 0
-
-        while (history_end - history_start) < 3:
-
-            history_start = random.randint(0, \
+        history_start = random.randint(0, \
                         (self.data[self.data['user_id'] == user].shape[0] - 3))
 
-            history_end = random.randint(history_start, \
-                         (self.data[self.data['user_id'] == user].shape[0]))
-
         self.current_user_history = self.data[self.data[\
-            'user_id'] == user].iloc[history_start:history_end,]
+            'user_id'] == user].iloc[history_start:(history_start + 4),]
 
     def produce(self, attributes, relax):
         """This function selects a song from data based on its match to spotify

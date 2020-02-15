@@ -3,6 +3,7 @@
 # main.py
 
 import pandas as pd
+import torch
 from agent import agent
 from environment import environment
 from state import state
@@ -13,6 +14,10 @@ def main():
     """Executes training and infernce of/from model"""
 
     print("\nBegining RL for recommender systems emulator.\n\n")
+
+    # Set a program wide default
+
+    torch.set_default_dtype(torch.float64)
 
     try:
 

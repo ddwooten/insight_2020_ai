@@ -7,6 +7,8 @@ import pdb
 
 class AgentModel(torch.nn.Module):
 
+    torch.set_default_dtype(torch.float64)
+
     def __init__(self, feature_len, lstm_len, dense_len):
 
         super(AgentModel, self).__init__()
@@ -35,17 +37,16 @@ class AgentModel(torch.nn.Module):
         # This squeeze function pulls out the output signal for each lstm
         # cell for the last time step in the sequence
 
-        lstm_out = lstm_out.squeeze()[-1,:]
+        #lstm_out = lstm_out[0,-1,:]
 
-        lstm_out = torch.nn.functional.relu(lstm_out)
+        #embeddings_out = torch.nn.functional.leaky_relu(dense_out, 
+        #                                        negative_slope = 0.5)
 
-        dense_out = self.dense(lstm_out)
-
-        embeddings_out = torch.nn.functional.prelu(dense_out, 0.5)
-
-        return(embeddings_out)
+        return(lstm_out[0,-1,:])
 
 class CriticModel(torch.nn.Module):
+
+    torch.set_default_dtype(torch.float64)
 
     def __init__(self, feature_len, lstm_len, dense_1_len, dense_2_len):
 

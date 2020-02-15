@@ -78,7 +78,7 @@ class environment:
 
         # Save the loss arrays as csvs
 
-        np.savetxt('./Agent_loss.csv', self.agent_loss, delimiter=',')
+        np.savetxt('./Agent_loss.csv', self.loss_agent, delimiter=',')
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""

@@ -23,6 +23,8 @@ class agent:
 
         self.is_train = None
 
+        self.loop = 0
+
         self.loss_agent = None
 
         self.loss_critic = None
@@ -39,15 +41,17 @@ class agent:
 
         self.reward = None
 
+        torch.set_default_dtype(torch.float64)
+
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel(12, 20, 6)
+        self.model_agent = AgentModel(12, 6, 6)
 
         self.set_model_weights(self.model_agent)
 
         self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
-                                               lr = 0.001)
+                                               lr = 0.01)
 
         self.loss_agent = torch.nn.MSELoss()
 
@@ -116,7 +120,7 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 20, 12))
+        self.factors_agent = np.zeros((1, 4, 12))
 
         self.factors_critic = np.zeros((1, 21, 11))
 
@@ -134,7 +138,7 @@ class agent:
 
                 break
 
-            if j == 20:
+            if j == 4:
 
                 break
             # In an act of data reduction and factor selection, I drop
@@ -327,17 +331,17 @@ class agent:
 
         # Clear out the gradients from the last prediction
 
+        self.loop += 1
+
         self.model_agent.zero_grad()
 
         # Get the critic reward
-
-        pdb.set_trace()
 
         agent_loss = self.loss_agent(self.pred,
                 torch.tensor(self.factors_agent[0, self.history_len - 1, 1:7]))
 
         self.agent_loss = agent_loss.detach().numpy()
-        
+
         self.optimizer_agent.step(agent_loss.backward())
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
