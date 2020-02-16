@@ -62,16 +62,6 @@ class environment:
 
             self.loss_agent.append(self.agent.agent_loss)
 
-            print("Actor Loss: {}\n".format(self.agent.agent_loss))
-            
-            # Save the model 
-
-            if np.mod(100, epoch) == 0: 
-
-                model_name = 'agent_model'
-
-                torch.save(self.agent.model_agent, '../models/' + model_name)
-
         model_name = 'end_agent_model'
 
         torch.save(self.agent.model_agent, '../models/' + model_name)

@@ -9,40 +9,57 @@ class AgentModel(torch.nn.Module):
 
     torch.set_default_dtype(torch.float64)
 
-    def __init__(self, feature_len, lstm_len, dense_len):
+    def __init__(self):
 
         super(AgentModel, self).__init__()
 
-        self.feature_len = feature_len
+        self.conv1 = torch.nn.Conv2d(1,3,2)
 
-        self.lstm_len = lstm_len
+        self.conv21 = torch.nn.Conv2d(1,3,2)
 
-        self.dense_len = dense_len
+        self.conv22 = torch.nn.Conv2d(1,3,2)
 
-        self.lstm = torch.nn.LSTM(input_size = self.feature_len, 
-                                  hidden_size = lstm_len,
-                                  num_layers = 1,
-                                  bias = True,
-                                  batch_first = True,
-                                  dropout = 0.0,
-                                  bidirectional = False)
+        self.conv23 = torch.nn.Conv2d(1,3,2)
 
-        self.dense = torch.nn.Linear(lstm_len, dense_len)
+        self.pool11 = torch.nn.MaxPool2d(2)
+
+        self.pool12 = torch.nn.MaxPool2d(2)
+
+        self.pool13 = torch.nn.MaxPool2d(2)
+
+        self.dense_1 = torch.nn.Linear(15, 6)
 
     def forward(self, batch):
         """ This function runs the prediciton sequence for the NN"""
+        
+        conv1 = self.conv1(batch)
 
-        lstm_out, (last_hidden_state,last_cell_state) = self.lstm(batch)
+        conv1 = torch.tanh(conv1)
 
-        # This squeeze function pulls out the output signal for each lstm
-        # cell for the last time step in the sequence
+        conv21 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([0])))
 
-        #lstm_out = lstm_out[0,-1,:]
+        conv21 = torch.tanh(conv21)
 
-        #embeddings_out = torch.nn.functional.leaky_relu(dense_out, 
-        #                                        negative_slope = 0.5)
+        conv22 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([1])))
 
-        return(lstm_out[0,-1,:])
+        conv22 = torch.tanh(conv22)
+
+        conv23 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([2])))
+
+        conv23 = torch.tanh(conv23)
+
+        pool11 = self.pool11(torch.index_select(conv21,1,torch.LongTensor([0])))
+
+        pool12 = self.pool12(torch.index_select(conv22,1,torch.LongTensor([1])))
+
+        pool13 = self.pool13(torch.index_select(conv23,1,torch.LongTensor([2])))
+
+        prepped = torch.cat((pool11.flatten(), pool12.flatten(),
+                            pool13.flatten()), 0)
+        
+        dense_1 = self.dense_1(prepped)
+
+        return(dense_1)
 
 class CriticModel(torch.nn.Module):
 
