@@ -36,27 +36,15 @@ class AgentModel(torch.nn.Module):
 
         conv1 = torch.tanh(conv1)
 
-        conv21 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([0])))
+        pool11 = self.pool11(torch.index_select(conv1,1,torch.LongTensor([0])))
 
-        conv21 = torch.tanh(conv21)
+        pool12 = self.pool12(torch.index_select(conv1,1,torch.LongTensor([1])))
 
-        conv22 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([1])))
-
-        conv22 = torch.tanh(conv22)
-
-        conv23 = self.conv21(torch.index_select(conv1, 1,torch.LongTensor([2])))
-
-        conv23 = torch.tanh(conv23)
-
-        pool11 = self.pool11(torch.index_select(conv21,1,torch.LongTensor([0])))
-
-        pool12 = self.pool12(torch.index_select(conv22,1,torch.LongTensor([1])))
-
-        pool13 = self.pool13(torch.index_select(conv23,1,torch.LongTensor([2])))
+        pool13 = self.pool13(torch.index_select(conv1,1,torch.LongTensor([2])))
 
         prepped = torch.cat((pool11.flatten(), pool12.flatten(),
                             pool13.flatten()), 0)
-        
+
         dense_1 = self.dense_1(prepped)
 
         return(dense_1)

@@ -48,8 +48,8 @@ class agent:
         
         self.model_agent = AgentModel()
 
-        self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
-                                               lr = 0.001)
+        self.optimizer_agent = torch.optim.SGD(self.model_agent.parameters(),
+                                               lr = 0.01)
 
         self.loss_agent = torch.nn.MSELoss()
 
@@ -327,8 +327,6 @@ class agent:
 
         self.loop += 1
 
-        self.model_agent.zero_grad()
-
         # Get the critic reward
 
         agent_loss = self.loss_agent(self.pred,
@@ -337,6 +335,10 @@ class agent:
         self.agent_loss = agent_loss.detach().numpy()
 
         self.optimizer_agent.step(agent_loss.backward())
+
+        self.optimizer_agent.zero_grad()
+
+        self.model_agent.zero_grad()
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
