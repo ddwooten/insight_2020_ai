@@ -7,3 +7,5 @@
 *.csv
 *.log
 *.pyc
+*.bkp
+*.swp
