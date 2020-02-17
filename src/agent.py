@@ -23,8 +23,6 @@ class agent:
 
         self.is_train = None
 
-        self.loop = 0
-
         self.loss_agent = None
 
         self.loss_critic = None
@@ -41,15 +39,15 @@ class agent:
 
         self.reward = None
 
-        torch.set_default_dtype(torch.float64)
-
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel()
+        self.model_agent = AgentModel(12, 20, 6)
 
-        self.optimizer_agent = torch.optim.SGD(self.model_agent.parameters(),
-                                               lr = 0.01)
+        self.set_model_weights(self.model_agent)
+
+        self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
+                                               lr = 0.001)
 
         self.loss_agent = torch.nn.MSELoss()
 
@@ -118,15 +116,13 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 1, 5, 12))
+        self.factors_agent = np.zeros((1, 20, 12))
 
         self.factors_critic = np.zeros((1, 21, 11))
 
         # This i here is to conform with tensorflow input expectations
 
         i = 0
-
-        k = 0
 
         j = 0
 
@@ -138,51 +134,57 @@ class agent:
 
                 break
 
-            if j == 5:
+            if j == 20:
 
                 break
             # In an act of data reduction and factor selection, I drop
             # all spotify embeddings and deploy my own
             
-            self.factors_agent[i, k, j, 0] = row['score']
+            self.factors_agent[i, j, 0] = row['score']
 
             self.factors_critic[i, j, 0] = row['score']
 
-            self.factors_agent[i, k, j, 1] = row['r0']
+            self.factors_agent[i, j, 1] = row['r0']
 
             self.factors_critic[i, j, 1] = row['r0']
 
-            self.factors_agent[i, k, j, 2] = row['r1']
+            self.factors_agent[i, j, 2] = row['r1']
 
             self.factors_critic[i, j, 2] = row['r1']
 
-            self.factors_agent[i, k, j, 3] = row['r2']
+            self.factors_agent[i, j, 3] = row['r2']
 
             self.factors_critic[i, j, 3] = row['r2']
 
-            self.factors_agent[i, k, j, 4] = row['r3']
+            self.factors_agent[i, j, 4] = row['r3']
 
             self.factors_critic[i, j, 4] = row['r3']
 
-            self.factors_agent[i, k, j, 5] = row['r4']
+            self.factors_agent[i, j, 5] = row['r4']
 
             self.factors_critic[i, j, 5] = row['r4']
 
-            self.factors_agent[i, k, j, 6] = row['r5']
+            self.factors_agent[i, j, 6] = row['r5']
 
             self.factors_critic[i, j, 6] = row['r5']
 
-            self.factors_agent[i, k, j, 7] = row['m']
+            self.factors_agent[i, j, 7] = row['m']
 
             self.factors_critic[i, j, 7] = row['m']
 
-            self.factors_agent[i, k, j, 8] = row['k']
+            self.factors_agent[i, j, 8] = row['k']
 
-            self.factors_agent[i, k, j, 9] = row['hour_d']
+            self.factors_critic[i, j, 8] = row['k']
 
-            self.factors_agent[i, k, j, 10] = row['avg']
+            self.factors_agent[i, j, 9] = row['day_w']
 
-            self.factors_agent[i, k, j, 11] = row['sd']
+            self.factors_critic[i, j, 9] = row['sd']
+
+            self.factors_agent[i, j, 10] = row['day_m']
+
+            self.factors_critic[i, j, 10] = row['avg']
+
+            self.factors_agent[i, j, 11] = row['hour_d']
 
             j += 1
 
@@ -318,27 +320,25 @@ class agent:
 
         self.factorize(user_history)
 
-        self.pred=self.model_agent(torch.Tensor(self.factors_agent[:,:,:-1,:]))
+        self.pred = self.model_agent(torch.Tensor(self.factors_agent[:,:-1,:]))
 
     def propagate(self):
         """This function propagates the loss through the actor and critic"""
 
         # Clear out the gradients from the last prediction
 
-        self.loop += 1
+        self.model_agent.zero_grad()
 
         # Get the critic reward
 
+        pdb.set_trace()
+
         agent_loss = self.loss_agent(self.pred,
-                torch.tensor(self.factors_agent[0,0,self.history_len - 1, 1:7]))
+                torch.tensor(self.factors_agent[0, self.history_len - 1, 1:7]))
 
         self.agent_loss = agent_loss.detach().numpy()
-
+        
         self.optimizer_agent.step(agent_loss.backward())
-
-        self.optimizer_agent.zero_grad()
-
-        self.model_agent.zero_grad()
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
