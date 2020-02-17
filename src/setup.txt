@@ -1,6 +1,6 @@
 train,yes 
 model, lstm
 loss, simple
-data, ../data/trimmed.pk, EpOchs, 10000
+data, ../data/trimmed.pk, EpOchs, 100000
 model_agent_path,     ../models/end_agent
 model_critic_path, ../models/end_critic

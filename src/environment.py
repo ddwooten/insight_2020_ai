@@ -62,15 +62,9 @@ class environment:
 
             self.loss_agent.append(self.agent.agent_loss)
 
-            print("Actor Loss: {}\n".format(self.agent.agent_loss))
-            
-            # Save the model 
+            if np.mod(epoch, 100) == 0: 
 
-            if np.mod(100, epoch) == 0: 
-
-                model_name = 'agent_model'
-
-                torch.save(self.agent.model_agent, '../models/' + model_name)
+                print("Actor Loss: {}\n".format(self.agent.agent_loss))
 
         model_name = 'end_agent_model'
 
@@ -78,7 +72,7 @@ class environment:
 
         # Save the loss arrays as csvs
 
-        np.savetxt('./Agent_loss.csv', self.agent_loss, delimiter=',')
+        np.savetxt('./Agent_loss.csv', self.loss_agent, delimiter=',')
 
     def querry_agent(self):
         """This function requests a recommendation of an agent"""

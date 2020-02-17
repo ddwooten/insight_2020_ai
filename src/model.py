@@ -35,13 +35,7 @@ class AgentModel(torch.nn.Module):
         # This squeeze function pulls out the output signal for each lstm
         # cell for the last time step in the sequence
 
-        lstm_out = lstm_out.squeeze()[-1,:]
-
-        lstm_out = torch.nn.functional.relu(lstm_out)
-
-        dense_out = self.dense(lstm_out)
-
-        embeddings_out = torch.nn.functional.prelu(dense_out, 0.5)
+        embeddings_out = lstm_out[0,-1,:]
 
         return(embeddings_out)
 

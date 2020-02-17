@@ -42,14 +42,14 @@ class agent:
     def add_model(self):
         """This function calls the appropriate model builder"""
         
-        self.model_agent = AgentModel(12, 20, 6)
+        self.model_agent = AgentModel(13, 10, 6)
 
         self.set_model_weights(self.model_agent)
 
         self.optimizer_agent = torch.optim.Adam(self.model_agent.parameters(),
                                                lr = 0.001)
 
-        self.loss_agent = torch.nn.MSELoss()
+        self.loss_agent = torch.nn.CrossEntropyLoss()
 
     def add_prediction(self, prediction):
         """This function concatenates the prediciton with the critic input"""
@@ -116,7 +116,7 @@ class agent:
 
         # Reset the holding arrays
 
-        self.factors_agent = np.zeros((1, 20, 12))
+        self.factors_agent = np.zeros((1, 5, 13))
 
         self.factors_critic = np.zeros((1, 21, 11))
 
@@ -134,57 +134,118 @@ class agent:
 
                 break
 
-            if j == 20:
+            if j == 5: 
 
                 break
             # In an act of data reduction and factor selection, I drop
             # all spotify embeddings and deploy my own
-            
+
             self.factors_agent[i, j, 0] = row['score']
 
-            self.factors_critic[i, j, 0] = row['score']
+            try:
+                
+                self.factors_agent[i, j, 1] = float(row['day_w']) / 7.0
 
-            self.factors_agent[i, j, 1] = row['r0']
+            except ValueError:
 
-            self.factors_critic[i, j, 1] = row['r0']
+                self.factors_agent[i, j, 1] = np.randint(1,7) / 7.0
 
-            self.factors_agent[i, j, 2] = row['r1']
+            try:
 
-            self.factors_critic[i, j, 2] = row['r1']
+                self.factors_agent[i, j, 2] = float(row['hour_d']) / 24.0
 
-            self.factors_agent[i, j, 3] = row['r2']
+            except ValueError:
 
-            self.factors_critic[i, j, 3] = row['r2']
+                self.factors_agent[i, j, 2] = np.randint(1,24) / 24.0
 
-            self.factors_agent[i, j, 4] = row['r3']
+            try:
 
-            self.factors_critic[i, j, 4] = row['r3']
+                int(row['cluster'])
 
-            self.factors_agent[i, j, 5] = row['r4']
+            except ValueError:
 
-            self.factors_critic[i, j, 5] = row['r4']
+                row['cluster'] = np.randint(0,9)
 
-            self.factors_agent[i, j, 6] = row['r5']
+            if int(row['cluster']) == 0:
 
-            self.factors_critic[i, j, 6] = row['r5']
+                self.factors_agent[i, j, 3] = 1
 
-            self.factors_agent[i, j, 7] = row['m']
+            else:
 
-            self.factors_critic[i, j, 7] = row['m']
+                self.factors_agent[i, j, 3] = 0
 
-            self.factors_agent[i, j, 8] = row['k']
+            if int(row['cluster']) == 1:
 
-            self.factors_critic[i, j, 8] = row['k']
+                self.factors_agent[i, j, 4] = 1
 
-            self.factors_agent[i, j, 9] = row['day_w']
+            else:
 
-            self.factors_critic[i, j, 9] = row['sd']
+                self.factors_agent[i, j, 4] = 0
 
-            self.factors_agent[i, j, 10] = row['day_m']
+            if int(row['cluster']) == 2:
 
-            self.factors_critic[i, j, 10] = row['avg']
+                self.factors_agent[i, j, 5] = 1
 
-            self.factors_agent[i, j, 11] = row['hour_d']
+            else:
+
+                self.factors_agent[i, j, 5] = 0
+
+            if int(row['cluster']) == 3:
+
+                self.factors_agent[i, j, 6] = 1
+
+            else:
+
+                self.factors_agent[i, j, 6] = 0
+
+            if int(row['cluster']) == 4:
+
+                self.factors_agent[i, j, 7] = 1
+
+            else:
+
+                self.factors_agent[i, j, 7] = 0
+
+            if int(row['cluster']) == 5:
+
+                self.factors_agent[i, j, 8] = 1
+
+            else:
+
+                self.factors_agent[i, j, 8] = 0
+
+            if int(row['cluster']) == 6:
+
+                self.factors_agent[i, j, 9] = 1
+
+            else:
+
+                self.factors_agent[i, j, 9] = 0
+
+            if int(row['cluster']) == 7:
+
+                self.factors_agent[i, j, 10] = 1
+
+            else:
+
+                self.factors_agent[i, j, 10] = 0
+
+            if int(row['cluster']) == 8:
+
+                self.factors_agent[i, j, 11] = 1
+
+            else:
+
+                self.factors_agent[i, j, 11] = 0
+
+            if int(row['cluster']) == 9:
+
+                self.factors_agent[i, j, 12] = 1
+
+            else:
+
+                self.factors_agent[i, j, 12] = 0
+
 
             j += 1
 
@@ -325,20 +386,26 @@ class agent:
     def propagate(self):
         """This function propagates the loss through the actor and critic"""
 
-        # Clear out the gradients from the last prediction
+        # Get the target index
 
-        self.model_agent.zero_grad()
+        for i in range(10):
 
-        # Get the critic reward
+            if self.factors_agent[0, self.history_len - 1, i + 3] > 0:
 
-        pdb.set_trace()
+                break
 
-        agent_loss = self.loss_agent(self.pred,
-                torch.tensor(self.factors_agent[0, self.history_len - 1, 1:7]))
+        agent_loss = self.loss_agent(self.pred.expand(1,10),
+                                     torch.LongTensor([i]))
 
         self.agent_loss = agent_loss.detach().numpy()
         
         self.optimizer_agent.step(agent_loss.backward())
+
+        # Clear out the gradients from the last prediction
+        
+        self.optimizer_agent.zero_grad()
+
+        self.model_agent.zero_grad()
 
     def ready_agent(self, agent_model_path, critic_model_path, train):
         """This function sets up a working agent - one complete with a loss
